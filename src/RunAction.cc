@@ -32,6 +32,11 @@ RunAction::RunAction()
   man->CreateNtupleDColumn("time");
   man->FinishNtuple(3);
 
+  man->CreateNtuple("Edep","Edep");
+  man->CreateNtupleDColumn("Edep");
+  man->FinishNtuple(4);
+
+
   man->CreateH2("xy1 ","xy1", 100, -60, 60, 100, -60, 60);
 }
 

@@ -11,7 +11,8 @@ ActionInitialization::~ActionInitialization() {}
 
 void ActionInitialization::BuildForMaster() const
 {
-    SetUserAction(new RunAction());
+    RunAction* runAction = new RunAction();
+    SetUserAction(runAction);
 }
 
 void ActionInitialization::Build() const
@@ -19,5 +20,14 @@ void ActionInitialization::Build() const
     // Set user actions
     SetUserAction(new RunAction());
     SetUserAction(new PG(fPosX, fPosY));  // Primary generator action
-    SetUserAction(new StepAction(fDataFile, fCollimatore));  // Stepping action
+    //SetUserAction(new StepAction(fDataFile, fCollimatore));  // Stepping action
+
+    RunAction *runAction = new RunAction();
+    SetUserAction(runAction);
+
+    MyEventAction *eventAction = new MyEventAction(runAction);
+    SetUserAction(eventAction);
+
+    StepAction *steppingAction = new StepAction(eventAction);
+    SetUserAction(steppingAction);
 }

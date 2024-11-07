@@ -208,6 +208,7 @@ DC::DefineMaterials()
   G4MaterialPropertiesTable *pTeflonPropertiesTable = new G4MaterialPropertiesTable();
 
   pTeflonPropertiesTable->AddProperty("RINDEX", pdTeflonPhotonMomentum, pdTeflonRefractiveIndex, TNbEntries);
+
   pTeflonPropertiesTable->AddProperty("ABSLENGTH", pdTeflonPhotonMomentum, pdTeflonAbsLength, TNbEntries);  
   pTeflonPropertiesTable->AddProperty("RAYLEIGH", pdTeflonPhotonMomentum, pdTeflonScatteringLength, TNbEntries);
   pTeflonPropertiesTable->AddProperty("REFLECTIVITY", pdTeflonPhotonMomentum, pdTeflonReflectivity, TNbEntries);
@@ -299,6 +300,7 @@ void DC::ConstructLaboratory()
   fScoringVolume_1 = PPAC_log;
  //Collimator Frame
   //Teflon
+
   G4double collf_x = collimatore/2;
   G4double collf_y = 0.5*mm;
   G4double collf_z = 1.5*mm;
@@ -406,11 +408,11 @@ void DC::SensitiveDete()
   // ------------------------------------------------------------------------------------------
   // sensitive detectors -----------------------------------------------------
   G4SDManager* SDman = G4SDManager::GetSDMpointer();
-  SDman->SetVerboseLevel(0);
+  SDman->SetVerboseLevel(1);
   //--------------------------------------------------------------------------------------------
   //Define Multi-Detector and Register 
   //--------------------------------------------------------------------------------------------
-  G4MultiFunctionalDetector* det = new G4MultiFunctionalDetector("IonPro");
+  G4MultiFunctionalDetector* det = new G4MultiFunctionalDetector("det");
   SDman->AddNewDetector(det);
   PPAC_log->SetSensitiveDetector(det);
   //--------------------------------------------------------------------------------------------
@@ -429,7 +431,8 @@ void DC::SensitiveDete()
   primitive->SetFilter(epFilter);
   //epFilter->show();
   //-- Register Sensitive Detector Run Action 
-  det->RegisterPrimitive(primitive);*/
-  //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 
+  det->RegisterPrimitive(primitive);
+*/  //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 
 }
+
 

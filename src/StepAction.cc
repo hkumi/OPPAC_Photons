@@ -1,3 +1,4 @@
+
 #include "StepAction.hh"
 #include "G4Step.hh"
 #include "G4Event.hh"
@@ -11,10 +12,10 @@
 #include <numeric>
 #include "Randomize.hh"
 #include "G4EventManager.hh"
-
+/*
 StepAction::StepAction(G4String data_file, double lunghezza_collimatore)			 
 {
-  datai_file = data_file;
+ datai_file = data_file;
   collimatore = lunghezza_collimatore*mm;
   for(int n = 0; n < 33; n++ )
   {
@@ -23,11 +24,17 @@ StepAction::StepAction(G4String data_file, double lunghezza_collimatore)
     s_y1[n] = 0;  
     s_y2[n] = 0;    
   }
+}*/
+
+
+StepAction::StepAction(MyEventAction *eventAction)
+{
+    fEventAction = eventAction;
 }
 
 StepAction::~StepAction()
 {
-  
+  /*
   unsigned int n;
   std::ofstream data_scrivi;
   data_scrivi.open(datai_file.c_str(),std::fstream::in | std::fstream::out | std::fstream::app);
@@ -52,7 +59,7 @@ StepAction::~StepAction()
     //G4cout << " ciccio " << s_y2[n]  << G4endl;
   }
   data_scrivi << " 9999 " << std::endl;
-  data_scrivi.close(); 
+  data_scrivi.close(); */
 }
 
 void StepAction::UserSteppingAction(const G4Step* aStep)
@@ -71,13 +78,19 @@ if ( aStep->GetTrack()->GetDefinition()->GetParticleName() == "opticalphoton" &&
       G4LogicalVolume* volume = aStep->GetPreStepPoint()->GetTouchableHandle()->GetVolume()->GetLogicalVolume();
     
       G4LogicalVolume* fScoringVolume_1 = detectorConstruction->GetScoringVolume();
+      G4Track *track = aStep->GetTrack();
       if (volume != fScoringVolume_1) return;          
+
+      
       //G4cout << aStep->GetPostStepPoint()->GetTouchableHandle()->GetVolume()->GetName() << G4endl;
       G4float tg = aStep->GetPostStepPoint()->GetGlobalTime()/(0.001*ns);
       //G4float tl = aStep->GetPostStepPoint()->GetLocalTime()/(0.001*ns);
       G4ThreeVector position = aStep->GetPostStepPoint()->GetPosition();
       G4float energia = (aStep->GetPostStepPoint()->GetKineticEnergy()/eV);
       G4float wave = 1240/energia;
+
+      G4double edep = aStep->GetTotalEnergyDeposit();
+      fEventAction->AddEdep(edep);     
 
 
       G4double X = position.getX();
@@ -90,6 +103,7 @@ if ( aStep->GetTrack()->GetDefinition()->GetParticleName() == "opticalphoton" &&
       man->AddNtupleRow(0);
 
       man->FillNtupleDColumn(1, 0, Y/mm);
+  
       man->AddNtupleRow(1);
 
       man->FillNtupleDColumn(2, 0, wave);
@@ -102,8 +116,8 @@ if ( aStep->GetTrack()->GetDefinition()->GetParticleName() == "opticalphoton" &&
       man->FillH2(0, X/mm, Y/mm);
 
 
-
-/*      if (tg<7000) 
+/*
+      if (tg<7000) 
       { 
         if ((X==50*mm+collimatore) && Y>-50*mm &&  Y<50*mm) 
         {
