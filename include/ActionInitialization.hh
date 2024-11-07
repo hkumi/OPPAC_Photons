@@ -5,6 +5,7 @@
 #include "RunAction.hh"
 #include "StepAction.hh"
 #include "PG.hh"
+#include "event.hh"
 
 class ActionInitialization : public G4VUserActionInitialization
 {

@@ -50,6 +50,7 @@ class DC : public G4VUserDetectorConstruction
     void SensitiveDete();
     double dens;
     double collimatore;
+    
 
  private:
     G4double LayerThickness;
