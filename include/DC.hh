@@ -61,12 +61,12 @@ class DC : public G4VUserDetectorConstruction
      G4Box  *HDPE_Box11,*HDPE_Box12,*HDPE_Box13,*HDPE_Box14,*HDPE_Box15,*HDPE_Box16,*HDPE_Box17,*Borated_Box1,*solidScintillator,*Lead_Box1,*Lead_Box2,*Lead_Box3,*Graphite_Box2,*Graphite_Box3;
      G4Box  *HDPE_Box18,*HDPE_Box19,*HDPE_Box20,*HDPE_Box21,*HDPE_Box22,*HDPE_Box23,*HDPE_Box24,*HDPE_Box25;
      G4VPhysicalVolume *Lead_PV,*HDPE_PV1,*HDPE_PV2, *HDPE_PV3,*HDPE_PV4,*HDPE_PV5,*HDPE_PV6,*HDPE_PV7,*HDPE_PV8,*HDPE_PV9,*HDPE_PV10,*Lead_PV4,*Lead_PV5,*Graphite_PV,*Graphite_PV2,*Graphite_PV3;
-     G4VPhysicalVolume *HDPE_PV11,*HDPE_PV12,*HDPE_PV13,*HDPE_PV14,*HDPE_PV15,*HDPE_PV16,*HDPE_PV17,*Borated_PV1,*physScintillator,*Lead_PV1,*Lead_PV2,*Lead_PV3,*Hole_PV3;
+     G4VPhysicalVolume *HDPE_PV11,*HDPE_PV12,*HDPE_PV13,*HDPE_PV14,*HDPE_PV15,*HDPE_PV16,*HDPE_PV17,*Borated_PV1,*physScintillator,*Lead_PV1,*Lead_PV2,*Lead_PV3,*Hole_PV3,*sensor_phys,*sensor_phys2;
      G4VPhysicalVolume *HDPE_PV18,*HDPE_PV19,*HDPE_PV20,*HDPE_PV21,*HDPE_PV22,*HDPE_PV23,*HDPE_PV24,*HDPE_PV25;
      G4LogicalVolume   *Lead_LV,*HDPE_LV1,*HDPE_LV2,*HDPE_LV3,*HDPE_LV4,*HDPE_LV5,*HDPE_LV6,*HDPE_LV7,*HDPE_LV8,*HDPE_LV9,*HDPE_LV10,*Lead_LV4,*Lead_LV5,*Graphite_LV,*Graphite_LV2,*Graphite_LV3;
      G4LogicalVolume   *HDPE_LV11,*HDPE_LV12,*HDPE_LV13,*HDPE_LV14,*HDPE_LV15,*HDPE_LV16,*HDPE_LV17,*Borated_LV1,*logicScintillator,*Lead_LV1,*Lead_LV2,*Lead_LV3;
      G4LogicalVolume   *HDPE_LV18,*HDPE_LV19,*HDPE_LV20,*HDPE_LV21,*HDPE_LV22,*HDPE_LV23,*HDPE_LV24,*HDPE_LV25;
-     G4LogicalVolume *Hole_LV,*Hole_LV3;
+     G4LogicalVolume *Hole_LV,*Hole_LV3,*sensor_log,*sensor_log2;
      G4SubtractionSolid    *collimator;
      G4VSolid *Hole, *Hole3;
 
@@ -77,7 +77,7 @@ class DC : public G4VUserDetectorConstruction
     G4double LayerThickness;
     G4int NbOfLayers;
     G4Material  *b_polyethylene,  *polyethylene, *NaI,*mat_graphite;
-    G4Material  *leadMaterial,*Aluminium,*PP;
+    G4Material  *leadMaterial,*Aluminium,*PP,*silicon;
     G4Element  *Na, *I, *C,*Al;
     
   
