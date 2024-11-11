@@ -114,6 +114,9 @@ DC::DefineMaterials()
   b_polyethylene->AddElement(O, 22.2*perCent);
   
 
+  //=================silicon material=============================================
+   silicon = pNistManager->FindOrBuildMaterial("G4_Si");
+
   // standard density = 3.72 mg/cm3
   //dens= 0.046*atmosphere; //35Torr
   //----------------------------------- CarbonTetrafluoride ------------------------
@@ -270,7 +273,7 @@ void DC::ConstructLaboratory()
   G4Material *CF4 = G4Material::GetMaterial("CF4");
   G4Material *Teflon = G4Material::GetMaterial("Teflon");
   G4Material *PP = G4Material::GetMaterial("G4_POLYPROPYLENE");
-  //G4Material *Aluminium = G4Material::GetMaterial("Aluminium");
+  //G4Material *Silicon = G4Material::GetMaterial("Aluminium");
 
   //	========================================================================================================================
   //======================================================================================================================
@@ -286,7 +289,7 @@ void DC::ConstructLaboratory()
   //==========================MODERATOR AND COLLIMATOR===================================
 
   //The HDPE_block1
-
+/*
   fblockSize = 10*cm;
 
 
@@ -836,7 +839,7 @@ void DC::ConstructLaboratory()
   Lead_LV5->SetVisAttributes(red);
 
 
-
+*/
   //===============PPAC DETECTOR===========================================================
   //polyethylene shield for neutron-proton conversion. =====================================
     // Create and place shield (polyethylene)
@@ -855,6 +858,10 @@ void DC::ConstructLaboratory()
                                       experimentalHall_log,
                                       false,
                                       0, true);
+   G4VisAttributes* red = new G4VisAttributes(G4Colour::Red());
+
+   red->SetVisibility(true);
+   red->SetForceAuxEdgeVisible(true);
   
   lShield->SetVisAttributes(red);
   //PPAC
@@ -866,6 +873,7 @@ void DC::ConstructLaboratory()
   PPAC_log = new G4LogicalVolume(PPAC_box,CF4,"PPAC_log",0,0,0);
   PPAC_phys = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,112.0*cm),PPAC_log,"PPAC_Vol",experimentalHall_log,false,0,true);
   fScoringVolume_1 = PPAC_log;
+ //.... using 3mm spacing between each collimator and placing the photo-sensor between each...............................................
  //Collimator Frame
   //Teflon
 
@@ -899,6 +907,48 @@ void DC::ConstructLaboratory()
     coll_phys = new G4PVPlacement(0,G4ThreeVector((-49.5+b*3)*mm,50.0*mm+coll_y,0.0),coll_log,"coll_Vol",PPAC_log,false,b+33,true);  
   }
 
+  //Silicon_detector...
+  //silicon
+  // Define the silicon photo sensor dimensions
+  G4double sensor_x  = 0.5*mm;
+  G4double sensor_y  = 1.0*mm;
+  G4double sensor_z = 1.5*mm; 
+  G4Box* sensor_box = new G4Box("sensor", sensor_x, sensor_y, sensor_z);
+  sensor_log = new G4LogicalVolume(sensor_box, silicon, "sensor_log", 0, 0, 0);
+  sensor_log->SetVisAttributes(red);
+  for (int c=0;c<33;c++) 
+  {
+    sensor_phys = new G4PVPlacement(0,G4ThreeVector((-50.0*mm - collimatore)+sensor_x,(-49.5+c*3+1.5)*mm,0.0),sensor_log,"sensor_Vol",PPAC_log,false,c,true);  
+  }
+
+  for (int c=0;c<33;c++) 
+  {
+    sensor_phys = new G4PVPlacement(0,G4ThreeVector((50.0*mm + collimatore)-sensor_x,(-49.5+c*3+1.5)*mm,0.0),sensor_log,"sensor_Vol",PPAC_log,false,c,true);  
+  }
+
+  //sensors on the top and bottom of the PPAC........................
+  // Top and Bottom Sensors
+  G4double siPM_x  = 1.0*mm;
+  G4double siPM_y  = 0.5*mm;
+  G4Box* sensor_box2 = new G4Box("sensor2", siPM_x, siPM_y, sensor_z);
+  sensor_log2 = new G4LogicalVolume(sensor_box2, silicon, "sensor_log2", 0, 0, 0);
+  sensor_log2->SetVisAttributes(red);
+
+   
+
+  // Top and Bottom Sensors
+  for (int d = 0; d < 33; d++) {
+      G4double sensor_x_position = (-49.5 + d * 3 + 1.5) * mm;
+
+      // Bottom side
+      sensor_phys2  = new G4PVPlacement(0, G4ThreeVector(sensor_x_position, (-50.0 * mm - collimatore) + siPM_y, 0.0),
+                                    sensor_log2, "sensor_Vol2", PPAC_log, false, d + 66, true);
+
+     // Top side
+      sensor_phys2  = new G4PVPlacement(0, G4ThreeVector(sensor_x_position, (50.0 * mm + collimatore) - siPM_y, 0.0),
+                                    sensor_log2, "sensor_Vol2", PPAC_log, false, d + 99, true);
+  }
+ 
   //Cathode
   //Particle drift volume
   G4double cathode_x = 50.0*mm+collimatore;
