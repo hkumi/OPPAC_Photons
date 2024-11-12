@@ -81,7 +81,7 @@ if ( aStep->GetTrack()->GetDefinition()->GetParticleName() == "opticalphoton" &&
       G4Track *track = aStep->GetTrack();
       if (volume != fScoringVolume_1) return;          
 
-      
+/*      
       //G4cout << aStep->GetPostStepPoint()->GetTouchableHandle()->GetVolume()->GetName() << G4endl;
       G4float tg = aStep->GetPostStepPoint()->GetGlobalTime()/(0.001*ns);
       //G4float tl = aStep->GetPostStepPoint()->GetLocalTime()/(0.001*ns);
@@ -116,7 +116,7 @@ if ( aStep->GetTrack()->GetDefinition()->GetParticleName() == "opticalphoton" &&
       man->FillH2(0, X/mm, Y/mm);
 
 
-/*
+
       if (tg<7000) 
       { 
         if ((X==50*mm+collimatore) && Y>-50*mm &&  Y<50*mm) 

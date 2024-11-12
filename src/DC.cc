@@ -265,6 +265,7 @@ AuPropertiesTable->AddProperty("REFLECTIVITY", AuPM, AuReflectivity, iNbEntries_
 //  pTeflonPropertiesTable->AddProperty("BACKSCATTERCONSTANT", pdTeflonPhotonMomentum, pdTeflonBackscatter, TNbEntries);
 //  pTeflonPropertiesTable->AddProperty("EFFICIENCY", pdTeflonPhotonMomentum, pdTeflonEfficiency, TNbEntries);
 
+  silicon->SetMaterialPropertiesTable(AuPropertiesTable);
 }
 
 void DC::ConstructLaboratory()
@@ -843,7 +844,6 @@ void DC::ConstructLaboratory()
   //===============PPAC DETECTOR===========================================================
   //polyethylene shield for neutron-proton conversion. =====================================
     // Create and place shield (polyethylene)
-
   G4double converter_x = 50.0*mm+collimatore;
   G4double converter_y = 50.0*mm+collimatore;
   G4double converter_z = 10*um;
@@ -852,7 +852,7 @@ void DC::ConstructLaboratory()
   auto lShield = new G4LogicalVolume(shield, polyethylene, "Shield");
 
   auto pShield = new G4PVPlacement(0,
-                                      G4ThreeVector(0.0, 0.0,-1.5*mm-10*um-1.6*um+112*cm),
+                                      G4ThreeVector(0.0, 0.0,-1.5*mm-10*um-1.6*um),
                                       lShield,
                                       "Shield",
                                       experimentalHall_log,
@@ -871,8 +871,8 @@ void DC::ConstructLaboratory()
   G4double PPAC_drift_z = 1.5*mm;
   G4Box* PPAC_box = new G4Box("Drift Volume",PPAC_drift_x,PPAC_drift_y,PPAC_drift_z);
   PPAC_log = new G4LogicalVolume(PPAC_box,CF4,"PPAC_log",0,0,0);
-  PPAC_phys = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,112.0*cm),PPAC_log,"PPAC_Vol",experimentalHall_log,false,0,true);
-  fScoringVolume_1 = PPAC_log;
+  PPAC_phys = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,0),PPAC_log,"PPAC_Vol",experimentalHall_log,false,0,true);
+  //fScoringVolume_1 = PPAC_log;
  //.... using 3mm spacing between each collimator and placing the photo-sensor between each...............................................
  //Collimator Frame
   //Teflon
@@ -910,7 +910,7 @@ void DC::ConstructLaboratory()
   //Silicon_detector...
   //silicon
   // Define the silicon photo sensor dimensions
-  G4double sensor_x  = 0.5*mm;
+  G4double sensor_x  = 1.0*mm;
   G4double sensor_y  = 1.0*mm;
   G4double sensor_z = 1.5*mm; 
   G4Box* sensor_box = new G4Box("sensor", sensor_x, sensor_y, sensor_z);
@@ -920,11 +920,13 @@ void DC::ConstructLaboratory()
   {
     sensor_phys = new G4PVPlacement(0,G4ThreeVector((-50.0*mm - collimatore)+sensor_x,(-49.5+c*3+1.5)*mm,0.0),sensor_log,"sensor_Vol",PPAC_log,false,c,true);  
   }
-
+/*
   for (int c=0;c<33;c++) 
   {
     sensor_phys = new G4PVPlacement(0,G4ThreeVector((50.0*mm + collimatore)-sensor_x,(-49.5+c*3+1.5)*mm,0.0),sensor_log,"sensor_Vol",PPAC_log,false,c,true);  
   }
+//  fScoringVolume_1 = sensor_log;
+
 
   //sensors on the top and bottom of the PPAC........................
   // Top and Bottom Sensors
@@ -947,7 +949,7 @@ void DC::ConstructLaboratory()
      // Top side
       sensor_phys2  = new G4PVPlacement(0, G4ThreeVector(sensor_x_position, (50.0 * mm + collimatore) - siPM_y, 0.0),
                                     sensor_log2, "sensor_Vol2", PPAC_log, false, d + 99, true);
-  }
+  }*/
  
   //Cathode
   //Particle drift volume
@@ -956,7 +958,7 @@ void DC::ConstructLaboratory()
   G4double cathode_z = 0.8*um;
   G4Box* cathode_box = new G4Box("cathode Volume",cathode_x,cathode_y,cathode_z);
   cathode_log = new G4LogicalVolume(cathode_box,PP,"cathode_log",0,0,0);
-  cathode_phys = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,1.5*mm+0.8*um+112.0*cm),cathode_log,"cathode_Vol",experimentalHall_log,false,0,true);
+  cathode_phys = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,1.5*mm+0.8*um),cathode_log,"cathode_Vol",experimentalHall_log,false,0,true);
 
   
   //anode
@@ -966,7 +968,7 @@ void DC::ConstructLaboratory()
   G4double anode_z = 0.8*um;
   G4Box* anode_box = new G4Box("anode Volume",anode_x,anode_y,anode_z);
   anode_log = new G4LogicalVolume(anode_box,PP,"anode_log",0,0,0);
-  anode_phys = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,-1.5*mm-0.8*um+112.0*cm),anode_log,"anode_Vol",experimentalHall_log,false,0,true);
+  anode_phys = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,-1.5*mm-0.8*um),anode_log,"anode_Vol",experimentalHall_log,false,0,true);
 
 
 
@@ -1020,3 +1022,12 @@ void DC::ConstructLaboratory()
 }
 
 
+///........................FUNCTION TO ADD THE DETECTOR TO THE SENSITIVE DETECTOR...................
+
+void DC::ConstructSDandField()
+{
+    MySensitiveDetector *sensDet = new MySensitiveDetector("SensitiveDetector");
+
+    sensor_log->SetSensitiveDetector(sensDet);
+
+}
