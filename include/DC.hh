@@ -5,7 +5,7 @@
 #include "G4Box.hh"
 #include "G4VSolid.hh"
 #include "G4SubtractionSolid.hh"
-
+#include "detector.hh"
 
 class G4LogicalVolume;
 class G4VPhysicalVolume;
@@ -80,7 +80,7 @@ class DC : public G4VUserDetectorConstruction
     G4Material  *leadMaterial,*Aluminium,*PP,*silicon;
     G4Element  *Na, *I, *C,*Al;
     
-  
+    virtual void ConstructSDandField();  
 
 };
 
