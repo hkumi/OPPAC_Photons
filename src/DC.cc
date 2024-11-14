@@ -278,7 +278,8 @@ void DC::ConstructLaboratory()
 
   //	========================================================================================================================
   //======================================================================================================================
-  // Experimental hall (world volume) --------------
+  // Experimental hall (world volume) ==================================================================================
+
   G4double expHall_x = 5.0*m;
   G4double expHall_y = 5.0*m;
   G4double expHall_z = 5.0*m;
@@ -914,16 +915,22 @@ void DC::ConstructLaboratory()
   G4double sensor_y  = 1.0*mm;
   G4double sensor_z = 1.5*mm; 
   G4Box* sensor_box = new G4Box("sensor", sensor_x, sensor_y, sensor_z);
-  sensor_log = new G4LogicalVolume(sensor_box, silicon, "sensor_log", 0, 0, 0);
-  sensor_log->SetVisAttributes(red);
+  sensor_log1 = new G4LogicalVolume(sensor_box, silicon, "sensor_log1", 0, 0, 0);
+  sensor_log1->SetVisAttributes(red);
+
+  sensor_log2 = new G4LogicalVolume(sensor_box, silicon, "sensor_log2", 0, 0, 0);
+  sensor_log2->SetVisAttributes(red);
+
+  //left sensor:::::::::sensor_log1
   for (int c=0;c<33;c++) 
   {
-    sensor_phys = new G4PVPlacement(0,G4ThreeVector((-50.0*mm - collimatore)+sensor_x,(-49.5+c*3+1.5)*mm,0.0),sensor_log,"sensor_Vol",PPAC_log,false,c,true);  
+    sensor_phys = new G4PVPlacement(0,G4ThreeVector((-50.0*mm - collimatore)+sensor_x,(-49.5+c*3+1.5)*mm,0.0),sensor_log1,"sensor_Vol1",PPAC_log,false,c,true);  
   }
-/*
+
+  //right sensor::::::::sensor_log2
   for (int c=0;c<33;c++) 
   {
-    sensor_phys = new G4PVPlacement(0,G4ThreeVector((50.0*mm + collimatore)-sensor_x,(-49.5+c*3+1.5)*mm,0.0),sensor_log,"sensor_Vol",PPAC_log,false,c,true);  
+    sensor_phys = new G4PVPlacement(0,G4ThreeVector((50.0*mm + collimatore)-sensor_x,(-49.5+c*3+1.5)*mm,0.0),sensor_log2,"sensor_Vol2",PPAC_log,false,c,true);  
   }
 //  fScoringVolume_1 = sensor_log;
 
@@ -931,25 +938,30 @@ void DC::ConstructLaboratory()
   //sensors on the top and bottom of the PPAC........................
   // Top and Bottom Sensors
   G4double siPM_x  = 1.0*mm;
-  G4double siPM_y  = 0.5*mm;
+  G4double siPM_y  = 1.0*mm;
   G4Box* sensor_box2 = new G4Box("sensor2", siPM_x, siPM_y, sensor_z);
-  sensor_log2 = new G4LogicalVolume(sensor_box2, silicon, "sensor_log2", 0, 0, 0);
-  sensor_log2->SetVisAttributes(red);
+  sensor_log3 = new G4LogicalVolume(sensor_box2, silicon, "sensor_log3", 0, 0, 0);
+  sensor_log3->SetVisAttributes(red);
 
-   
+  sensor_log4 = new G4LogicalVolume(sensor_box2, silicon, "sensor_log4", 0, 0, 0);
+  sensor_log4->SetVisAttributes(red);
 
   // Top and Bottom Sensors
   for (int d = 0; d < 33; d++) {
       G4double sensor_x_position = (-49.5 + d * 3 + 1.5) * mm;
 
-      // Bottom side
+      // Bottom side:::::::::::::::::::sensor_log3
       sensor_phys2  = new G4PVPlacement(0, G4ThreeVector(sensor_x_position, (-50.0 * mm - collimatore) + siPM_y, 0.0),
-                                    sensor_log2, "sensor_Vol2", PPAC_log, false, d + 66, true);
+                                    sensor_log3, "sensor_Vol3", PPAC_log, false, d , true);
+  }
 
-     // Top side
+  for (int d = 0; d < 33; d++) {
+      G4double sensor_x_position = (-49.5 + d * 3 + 1.5) * mm;
+
+     // Top side:::::::::::::::::::::::::sensor_log4
       sensor_phys2  = new G4PVPlacement(0, G4ThreeVector(sensor_x_position, (50.0 * mm + collimatore) - siPM_y, 0.0),
-                                    sensor_log2, "sensor_Vol2", PPAC_log, false, d + 99, true);
-  }*/
+                                    sensor_log4, "sensor_Vol4", PPAC_log, false, d , true);
+  }
  
   //Cathode
   //Particle drift volume
@@ -1028,6 +1040,9 @@ void DC::ConstructSDandField()
 {
     MySensitiveDetector *sensDet = new MySensitiveDetector("SensitiveDetector");
 
-    sensor_log->SetSensitiveDetector(sensDet);
+    sensor_log1->SetSensitiveDetector(sensDet);   //left sensor
+    sensor_log2->SetSensitiveDetector(sensDet);   //right sensor
+    sensor_log3->SetSensitiveDetector(sensDet);   //bottom sensor
+    sensor_log4->SetSensitiveDetector(sensDet);   //top sensor
 
 }

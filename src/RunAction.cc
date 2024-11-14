@@ -7,14 +7,43 @@
 
 RunAction::RunAction()
 {
-  theSDName.push_back(G4String("IonPro"));
+  //theSDName.push_back(G4String("IonPro"));
   G4AnalysisManager *man = G4AnalysisManager::Instance();
   man->SetNtupleMerging(true);
   man->SetVerboseLevel( 1 );
     
 
+  man->CreateNtuple("LeftData1", "LeftData1");
+  man->CreateNtupleDColumn("x");
+  man->CreateNtupleDColumn("y");
+  man->CreateNtupleDColumn("z");
+  man->CreateNtupleIColumn("copyNo");
+  man->FinishNtuple(0);
+
+  man->CreateNtuple("RightData2", "RightData2");
+  man->CreateNtupleDColumn("x");
+  man->CreateNtupleDColumn("y");
+  man->CreateNtupleDColumn("z");
+  man->CreateNtupleIColumn("copyNo");
+  man->FinishNtuple(1);
+
+  man->CreateNtuple("BottomData3", "BottomData3");
+  man->CreateNtupleDColumn("x");
+  man->CreateNtupleDColumn("y");
+  man->CreateNtupleDColumn("z");
+  man->CreateNtupleIColumn("copyNo");
+  man->FinishNtuple(2);
+
+  man->CreateNtuple("TopData4", "TopData4");
+  man->CreateNtupleDColumn("x");
+  man->CreateNtupleDColumn("y");
+  man->CreateNtupleDColumn("z");
+  man->CreateNtupleIColumn("copyNo");
+  man->FinishNtuple(3);
+
+
     
- 
+/* 
   man->CreateNtuple("xposition","xposition");
   man->CreateNtupleDColumn("x");
   man->FinishNtuple(0);
@@ -24,8 +53,8 @@ RunAction::RunAction()
   man->FinishNtuple(1);
 
 
-  man->CreateNtuple("wavelength","wavelength");
-  man->CreateNtupleDColumn("wavelength");
+  man->CreateNtuple("SiPM","siPM");
+  man->CreateNtupleDColumn("Number");
   man->FinishNtuple(2);
 
   man->CreateNtuple("time","time");
@@ -37,7 +66,11 @@ RunAction::RunAction()
   man->FinishNtuple(4);
 
 
-  man->CreateH2("xy1 ","xy1", 100, -60, 60, 100, -60, 60);
+  man->CreateH2("xy1 ","xy1", 100, -60, 60, 100, -60, 60);*/
+
+
+
+
 }
 
 RunAction::~RunAction()
