@@ -66,7 +66,7 @@ class DC : public G4VUserDetectorConstruction
      G4LogicalVolume   *Lead_LV,*HDPE_LV1,*HDPE_LV2,*HDPE_LV3,*HDPE_LV4,*HDPE_LV5,*HDPE_LV6,*HDPE_LV7,*HDPE_LV8,*HDPE_LV9,*HDPE_LV10,*Lead_LV4,*Lead_LV5,*Graphite_LV,*Graphite_LV2,*Graphite_LV3;
      G4LogicalVolume   *HDPE_LV11,*HDPE_LV12,*HDPE_LV13,*HDPE_LV14,*HDPE_LV15,*HDPE_LV16,*HDPE_LV17,*Borated_LV1,*logicScintillator,*Lead_LV1,*Lead_LV2,*Lead_LV3;
      G4LogicalVolume   *HDPE_LV18,*HDPE_LV19,*HDPE_LV20,*HDPE_LV21,*HDPE_LV22,*HDPE_LV23,*HDPE_LV24,*HDPE_LV25;
-     G4LogicalVolume *Hole_LV,*Hole_LV3,*sensor_log,*sensor_log2;
+     G4LogicalVolume *Hole_LV,*Hole_LV3,*sensor_log1,*sensor_log2,*sensor_log3,*sensor_log4;
      G4SubtractionSolid    *collimator;
      G4VSolid *Hole, *Hole3;
 
