@@ -33,7 +33,7 @@ Double_t calculateWeightedMeanY(double Py1, double Py2, double Ny1, double Ny2, 
 
 void analysis() {
     TString dir = "/home/harriet/Geant4/neutron_example/OPPAC_Sim-master/build";
-    std::vector<TString> files{"photon_positions_3.csv"};//"photon_positions_2.csv", "photon_positions_3.csv", "photon_positions_4.csv"};
+    std::vector<TString> files{"photon_positions_1.csv"};//,"photon_positions_2.csv", "photon_positions_3.csv", "photon_positions_4.csv"};
 
     
     gStyle->SetOptStat(0);
@@ -43,12 +43,11 @@ void analysis() {
     c1->Divide(2, 2); // Divide canvas into 4 subpads
  
     TCanvas *c2 = new TCanvas("c2", "Histograms with Gaussian Fit", 800, 600);
-    c2->Divide(2, 2); // Canvas for histograms with Gaussian fits
+    c2->Divide(5, 5); // Canvas for histograms with Gaussian fits
 
 
-    TCanvas *c3 = new TCanvas("c3", "Selected Points", 800, 600); // Create a new canvas for the selected point
-    TH1D *histCount16 = new TH1D("histCount16", "Count of Value 16", files.size(), 0, files.size()); // One bin per file
-    int fileIndex = 0; // Index for points in the TGraph
+    TCanvas *c3 = new TCanvas("c3", "Selected Points", 800, 600); 
+    TH1D *xPosHist = new TH1D("xPosHist", "Y Position", 50, -50, 50); 
 
     TCanvas *c4 = new TCanvas("c4", "X Position Distribution", 800, 600);
     TH1D *histXPos = new TH1D("histXPos", "Distribution of X Position", 0, 0, 40);
@@ -72,7 +71,7 @@ void analysis() {
             std::istringstream ss(line);
             std::string col1, col2, col3,col4;
 
-            // Assuming columns are comma-separated
+            
             std::getline(ss, col1, ',');
             std::getline(ss, col2, ',');
             std::getline(ss, col3, ',');
@@ -87,17 +86,17 @@ void analysis() {
 
         file.close();
 
-        // Create a histogram for the third column
+        
         double min = *std::min_element(column4.begin(), column4.end());
         double max = *std::max_element(column4.begin(), column4.end());
-        int bins = 50; // Adjust the number of bins as needed
+        int bins = 50; 
 
         TH1D *hist = new TH1D(iFile.Data(), ("Histogram of " + iFile).Data(), bins, min, max);
         for (double value : column4) {
             hist->Fill(value);
         }
 
-        c1->cd(); // Move to the next pad
+        c1->cd(pad++); 
         hist->GetXaxis()->SetTitle("Sensor Number");
         hist->GetYaxis()->SetTitle("Counts");
         hist->SetLineColor(kBlue);
@@ -121,61 +120,65 @@ void analysis() {
         std::cout << "  FWHM: " << fwhm << std::endl;
         std::cout << "  Total Events: " << column4.size() << std::endl;
 */
-        // Draw the histogram with Gaussian fit in the second canvas
-        c2->cd(pad1); // Move to the next pad in c2
-        hist->Draw(); // Draw histogram
-        gaussFit1->Draw("same"); // Overlay Gaussian fit
-
-
-        // Add Gaussian fit parameters as text on the plot
-        TLatex latex;
-        latex.SetNDC(); // Use normalized device coordinates
-        latex.SetTextSize(0.05);
-        latex.SetTextColor(kBlack);
-
-        // Position the text on the plot
-        latex.DrawLatex(0.15, 0.85, Form("Mean (μ): %.2f", mean));
-        latex.DrawLatex(0.15, 0.80, Form("Std Dev (σ): %.2f", sigma));
-        latex.DrawLatex(0.15, 0.75, Form("FWHM: %.2f", fwhm));
-        latex.DrawLatex(0.15, 0.70, Form("N: %lu", column4.size()));
-
+        
+      
         std::vector<double> xPositions; // Vector to store x_pos values       
         for (int valueToCheck = 0; valueToCheck <= 32; ++valueToCheck) {
-            // Collect values matching the current `valueToCheck`
-            std::vector<double> matchingValues;
-            for (double value : column4) {
-                if (value == valueToCheck) {
-                   matchingValues.push_back(value);
+            // Vectors to hold x and y coordinates for the matching values
+            std::vector<double> matchingX;
+            std::vector<double> matchingY;
+             std::vector<double> matchingV;
+
+            // Iterate through column4 and check for matching values
+            for (size_t i = 0; i < column4.size(); ++i) {
+                if (static_cast<int>(column4[i]) == valueToCheck) { // Compare to valueToCheck
+                   matchingX.push_back(column1[i]); // Add corresponding x value
+                   matchingY.push_back(column2[i]); // Add corresponding y value
+                   matchingV.push_back(column4[i]);
                 }
             }
 
             // If no matching values, skip this iteration
-            if (matchingValues.empty())  continue;
-            
+            if (matchingX.empty()) continue;
 
+           /* // Print or process the matching values
+            std::cout << "Value " << valueToCheck << " matches " << matchingX.size() << " entries." << std::endl;
+            for (size_t j = 0; j < matchingX.size(); ++j) {
+                std::cout << "x: " << matchingX[j] << ", y: " << matchingY[j] << std::endl;
+            }*/
+
+     
             // Create a histogram for the current value
-            int bins = 10; // Use appropriate bin size
-            double min = *std::min_element(matchingValues.begin(), matchingValues.end());
-            double max = *std::max_element(matchingValues.begin(), matchingValues.end());
-            TH1D *hist = new TH1D(Form("hist_%d", valueToCheck),Form("Histogram for value %d", valueToCheck),bins, min, max);
+            int bins = 10; 
+            double min = *std::min_element(matchingY.begin(), matchingY.end());
+            double max = *std::max_element(matchingY.begin(), matchingY.end());
+            TH1D *hist1 = new TH1D(Form("hist_%d", valueToCheck),Form("Histogram for value %d", valueToCheck),bins, min, max);
 
             // Fill the histogram
-            for (double val : matchingValues) {
-                hist->Fill(val);
+            for (double val : matchingY) {
+                hist1->Fill(val);
             }
+            c2->cd(pad++); 
+           hist1->GetXaxis()->SetTitle(" Y_Position [mm]");
+           hist1->GetYaxis()->SetTitle("Counts");
+           hist1->SetLineColor(kBlue);
+           hist1->Draw();
+
 
             // Fit the histogram with a Gaussian
-            TF1 *gaussFit = new TF1("gaussFit", "gaus", min, max);
-            hist->Fit(gaussFit, "R");
-
+           TF1 *gaussFit = new TF1("gaussFit", "gaus", min, max);
+           hist1->Fit(gaussFit, "R");
+        
             // Extract Gaussian fit parameters
-            double mean1 = gaussFit->GetParameter(1);      // Mean (centroid)
-            double sigma1 = gaussFit->GetParameter(2);     // Standard deviation
-            double amplitude1 = gaussFit->GetParameter(0); // Amplitude (height of the peak)
+           double mean1 = gaussFit->GetParameter(1);      // Mean (centroid)
+           double sigma1 = gaussFit->GetParameter(2);     // Standard deviation
+           double amplitude1 = gaussFit->GetParameter(0); // Amplitude (height of the peak)
 
             // Calculate x_position
             double x_pos = calculateWeightedMeanX( mean1, amplitude1, sigma1);
 
+        
+           
             // Print results
             std::cout << "File: " << iFile << ", Value: " << valueToCheck
                   << " | Mean: " << mean1 << " | Sigma: " << sigma1
@@ -183,27 +186,26 @@ void analysis() {
                   << " | x_pos: " << x_pos << std::endl;
 
             // Store x_pos in the vector
-            xPositions.push_back(x_pos);
+            //xPositions.push_back(x_pos);
  
-            // Clean up memory
-                  //delete gaussFit;
-        }
+           xPosHist->Fill(x_pos);
+
+        
+       
+
+
+       }
      
-
-        c4->cd();
-TH1D *xPosHist = new TH1D("xPosHist", "X Position Distribution", 10, 0, 40); // Adjust bin count and range as needed
-for (double x : xPositions) {
-    xPosHist->Fill(x);
-}
-
-// Style and draw the histogram
-xPosHist->SetLineColor(kBlue);
-xPosHist->GetXaxis()->SetTitle("X Position");
-xPosHist->GetYaxis()->SetTitle("Frequency");
-xPosHist->Draw("HIST");
+// Draw the histogram
+       c3->cd();
+       xPosHist->GetXaxis()->SetTitle("Y_recontruction [mm]");
+       xPosHist->GetYaxis()->SetTitle("Counts");
+       xPosHist->SetMarkerStyle(20); 
+       xPosHist->Draw("P"); 
+        
     }
 
     c1->Update();
     c2->Update();
-    c4->Update();
+    //c3->Update();
 }
