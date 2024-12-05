@@ -8,7 +8,7 @@
 #include <vector>
 
 class Run : public G4Run {
-
+/*
 public:
   // constructor and destructor.
   //  vector of multifunctionaldetector name has to given to constructor.
@@ -45,9 +45,10 @@ public:
 	//inline G4double GetNElectron() const { return GetTotal(mapSum); 
 	G4double totale; 
 	G4int conta; 
-	std::vector<G4double> vec;
+	std::vector<G4double> vec;*/
 };
 
 //
 
 #endif
+
