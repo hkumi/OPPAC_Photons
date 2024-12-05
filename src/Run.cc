@@ -11,6 +11,7 @@
 //
 //  Constructor. 
 //   (The vector of MultiFunctionalDetector name has to given.)
+/*
 Run::Run(const std::vector<G4String> mfdName): G4Run()
 {
   G4SDManager* SDman = G4SDManager::GetSDMpointer();
@@ -161,3 +162,4 @@ void Run::DumpAllScorer()
   }
 }
 
+*/

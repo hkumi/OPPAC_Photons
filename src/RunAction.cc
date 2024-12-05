@@ -41,13 +41,12 @@ RunAction::RunAction()
   man->CreateNtupleIColumn("copyNo");
   man->FinishNtuple(3);
 
-
     
-/* 
+ 
   man->CreateNtuple("xposition","xposition");
   man->CreateNtupleDColumn("x");
-  man->FinishNtuple(0);
-
+  man->FinishNtuple(4);
+/*
   man->CreateNtuple("yposition","yposition");
   man->CreateNtupleDColumn("y");
   man->FinishNtuple(1);
@@ -75,13 +74,13 @@ RunAction::RunAction()
 
 RunAction::~RunAction()
 {
-  theSDName.clear();
+  //theSDName.clear();
 }
-
+/*
 G4Run* RunAction::GenerateRun()
 { 
-  return new Run(theSDName);
-}
+ // return new Run(theSDName);
+}*/
 
 void RunAction::BeginOfRunAction(const G4Run* aRun)
 {

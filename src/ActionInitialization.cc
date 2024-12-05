@@ -2,7 +2,6 @@
 #include "RunAction.hh"
 #include "StepAction.hh"
 #include "PG.hh"
-
 ActionInitialization::ActionInitialization(const G4String& dataFile, G4double collimatore, G4double posX, G4double posY)
     : G4VUserActionInitialization(), fDataFile(dataFile), fCollimatore(collimatore), fPosX(posX), fPosY(posY)
 {}
@@ -25,8 +24,8 @@ void ActionInitialization::Build() const
     RunAction *runAction = new RunAction();
     SetUserAction(runAction);
 
-    MyEventAction *eventAction = new MyEventAction(runAction);
-    SetUserAction(eventAction);
+     MyEventAction *eventAction = new MyEventAction(runAction);
+    SetUserAction(eventAction);    
 
     StepAction *steppingAction = new StepAction(eventAction);
     SetUserAction(steppingAction);

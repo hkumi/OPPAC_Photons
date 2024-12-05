@@ -265,6 +265,8 @@ AuPropertiesTable->AddProperty("REFLECTIVITY", AuPM, AuReflectivity, iNbEntries_
 //  pTeflonPropertiesTable->AddProperty("BACKSCATTERCONSTANT", pdTeflonPhotonMomentum, pdTeflonBackscatter, TNbEntries);
 //  pTeflonPropertiesTable->AddProperty("EFFICIENCY", pdTeflonPhotonMomentum, pdTeflonEfficiency, TNbEntries);
 
+//:::::::::::::::::::::::::::optical properties for silicon::::::::::::::::::::::::::::::::::::::::::::::
+
   silicon->SetMaterialPropertiesTable(AuPropertiesTable);
 }
 
@@ -928,6 +930,7 @@ void DC::ConstructLaboratory()
   }
 
   //right sensor::::::::sensor_log2
+
   for (int c=0;c<33;c++) 
   {
     sensor_phys = new G4PVPlacement(0,G4ThreeVector((50.0*mm + collimatore)-sensor_x,(-49.5+c*3+1.5)*mm,0.0),sensor_log2,"sensor_Vol2",PPAC_log,false,c,true);  
@@ -1037,12 +1040,18 @@ void DC::ConstructLaboratory()
 ///........................FUNCTION TO ADD THE DETECTOR TO THE SENSITIVE DETECTOR...................
 
 void DC::ConstructSDandField()
+
 {
+
     MySensitiveDetector *sensDet = new MySensitiveDetector("SensitiveDetector");
 
+    G4SDManager* SDman = G4SDManager::GetSDMpointer();
+    SDman->AddNewDetector(sensDet);
+
+
     sensor_log1->SetSensitiveDetector(sensDet);   //left sensor
-    sensor_log2->SetSensitiveDetector(sensDet);   //right sensor
-    sensor_log3->SetSensitiveDetector(sensDet);   //bottom sensor
-    sensor_log4->SetSensitiveDetector(sensDet);   //top sensor
+   // sensor_log2->SetSensitiveDetector(sensDet);   //right sensor
+    //sensor_log3->SetSensitiveDetector(sensDet);   //bottom sensor
+    //sensor_log4->SetSensitiveDetector(sensDet);   //top sensor*/
 
 }
