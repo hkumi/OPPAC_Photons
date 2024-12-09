@@ -35,11 +35,11 @@ void PG::GeneratePrimaries(G4Event* anEvent)
 {
   // Get the particle from the particle table (in this case, an alpha particle)
     G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
-    G4ParticleDefinition* particle = particleTable->FindParticle("alpha");
+    G4ParticleDefinition* particle = particleTable->FindParticle("neutron");
 
     // Set the particle type and other properties
     particleGun->GetCurrentSource()->SetParticleDefinition(particle);
-    particleGun->GetCurrentSource()->GetEneDist()->SetMonoEnergy(5.5 * MeV);  // Set energy to 2.5 MeV
+    particleGun->GetCurrentSource()->GetEneDist()->SetMonoEnergy(2.5 * MeV);  // Set energy to 2.5 MeV
 
     // Set position and direction
     particleGun->GetCurrentSource()->GetPosDist()->SetCentreCoords(G4ThreeVector(posi_x * mm, posi_y * mm, -19 * mm));

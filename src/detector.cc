@@ -27,8 +27,8 @@ void MySensitiveDetector::Initialize(G4HCofThisEvent* HCE) {
     // Create the hits collection
 
     SensorCollection = new SensorHitsCollection(SensitiveDetectorName, collectionName[0]);
-    G4cout << "SensitiveDetectorName: " << SensitiveDetectorName << G4endl;
-G4cout << "Collection Name: " << collectionName[0] << G4endl;
+ //   G4cout << "SensitiveDetectorName: " << SensitiveDetectorName << G4endl;
+//G4cout << "Collection Name: " << collectionName[0] << G4endl;
 
     // Register the collection with the event
     static G4int HCID = -1; // Static to ensure it's set only once
@@ -85,20 +85,20 @@ double  MySensitiveDetector::calculateWeightedMeanX(double Px1, double Nx1, doub
 
 
 
-void MySensitiveDetector::FitHistogram(const std::vector<int>& copyNumbers) {
-    if (copyNumbers.empty()) return;
+void MySensitiveDetector::FitHistogram(const std::vector<double>& Position) {
+    if (Position.empty()) return;
 
     // Find min and max copy numbers
-    double min = *std::min_element(copyNumbers.begin(), copyNumbers.end());
-    double max = *std::max_element(copyNumbers.begin(), copyNumbers.end());
+    double min = *std::min_element(Position.begin(), Position.end());
+    double max = *std::max_element(Position.begin(), Position.end());
     int bins = 50;
 
     // Create histogram
     
      static int histCounter = 0; // Static counter for unique histogram names
     TH1D* hist = new TH1D(Form("copy_%d", histCounter++), "Copy Number Distribution", bins, min, max);
-    for (int copyNo : copyNumbers) {
-        hist->Fill(copyNo);
+    for (int Pos : Position) {
+        hist->Fill(Pos);
     }
 
     // Fit the histogram with a Gaussian
@@ -212,23 +212,34 @@ G4bool MySensitiveDetector::ProcessHits(G4Step *aStep, G4TouchableHistory*)
 
 
 void MySensitiveDetector::EndOfEvent(G4HCofThisEvent* HCE) {
-    // Log the total number of hits for debugging
+    // Log the total number of hits for debuggin g
     G4int nHits = SensorCollection->entries();
-    G4cout << "End of Event: Number of hits in SensorCollection: " << nHits << G4endl;
+//    G4cout << "End of Event: Number of hits in SensorCollection: " << nHits << G4endl;
+
+    // Check if there are any hits
+if (nHits > 0) {
+
+    std::vector<double> yPositions; // Collect y-positions of hits
+    std::vector<double> xPositions; // Collect x-positions of hits
 
     // Optionally process hits
     for (G4int i = 0; i < nHits; i++) {
         SensorHit* hit = (*SensorCollection)[i];
+        //G4cout << "End of Event: Number of hits in SensorCollection: " << nHits << G4endl;
+
         /*G4cout << "Hit " << i << ": "
                << "Position = " << hit->GetSensorPosition()
                << ", Energy = " << hit->GetSensorEnergy()
                << ", Sensor ID = " << hit->GetSensorNumber() << G4endl;*/
-
-         sensor1CopyNumbers.push_back(hit->GetSensorNumber());
+        G4ThreeVector position = hit->GetSensorPosition(); // Get the hit position
+        yPositions.push_back(position.y()); // Store the y-coordinate
+        sensor1CopyNumbers.push_back(hit->GetSensorNumber());
     }
+     G4cout << "End of Event: Number of hits in SensorCollection: " << nHits << G4endl;
 
-     // Fit the histogram with the collected data
-    FitHistogram(sensor1CopyNumbers);
+    // Fit the histogram with the collected data
+    FitHistogram(yPositions);
+}
 }
 
 
