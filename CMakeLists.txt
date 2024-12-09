@@ -4,8 +4,13 @@
 #----------------------------------------------------------------------------
 # Setup the project
 #
-cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
+
+cmake_minimum_required(VERSION 3.16...3.27)
 project(scinti)
+
+#set(CMAKE_CXX_STANDARD 14 CACHE STRING "C++ Standard Version")
+
+#set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 #----------------------------------------------------------------------------
 # Find Geant4 package, activating all available UI and Vis drivers by default
@@ -19,12 +24,29 @@ else()
   find_package(Geant4 REQUIRED)
 endif()
 
+
 #----------------------------------------------------------------------------
 # Setup Geant4 include directories and compile definitions
 # Setup include directory for this project
 #
 include(${Geant4_USE_FILE})
-include_directories(${PROJECT_SOURCE_DIR}/include)
+#include_directories(${PROJECT_SOURCE_DIR}/include)
+
+
+# Find ROOT (required package)
+#
+find_package(ROOT REQUIRED)
+#include_directories(${ROOT_INCLUDE_DIRS})
+#link_directories(${ROOT_LIBRARY_DIR})
+#add_definitions(${ROOT_CXX_FLAGS})
+include_directories(${PROJECT_SOURCE_DIR}/include
+                    ${PROJECT_SOURCE_DIR}/shared/include
+                    ${Geant4_INCLUDE_DIR}
+                    ${ROOT_INCLUDE_DIRS})
+
+# Add ROOT-specific definitions to avoid conflicts
+#add_definitions(-DROOT_R__NO_STRING_VIEW)  # Prevent conflicts with std::string_view
+#add_definitions(${ROOT_CXX_FLAGS})
 
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
@@ -37,8 +59,8 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 # Add the executable, and link it to the Geant4 libraries
 #
 add_executable(exe_scinti scinti.cc ${sources} ${headers})
-target_link_libraries(exe_scinti ${Geant4_LIBRARIES})
-
+#target_link_libraries(exe_scinti ${Geant4_LIBRARIES})
+target_link_libraries(exe_scinti ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} )
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
 # build scinti. This is so that we can run the executable directly because it
