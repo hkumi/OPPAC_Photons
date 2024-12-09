@@ -19,7 +19,7 @@ public:
     double calculateWeightedMeanX(double Px1, double Nx1, double sigmax1);    
     void SaveToCSV(G4ThreeVector posPhotons, G4int copyNo);
     void RecordSensorData(const std::string& volumeName, int ntupleIndex, double posX, double posY, int event, int copyNo, G4AnalysisManager* man);  
-    void FitHistogram(const std::vector<int>& copyNumbers);
+    void FitHistogram(const std::vector<double>& Position);
     std::vector<int>& GetSensor1CopyNumbers()  { return sensor1CopyNumbers; }
     G4bool ProcessHits(G4Step *, G4TouchableHistory*);
     void Initialize(G4HCofThisEvent*);
