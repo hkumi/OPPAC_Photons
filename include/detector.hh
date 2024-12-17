@@ -16,10 +16,11 @@ public:
     MySensitiveDetector(G4String);
     ~MySensitiveDetector();
 
-    double calculateWeightedMeanX(double Px1, double Nx1, double sigmax1);    
+    double calculateWeightedMeanX(double P_x1, double N_x1, double sigma_x1, double P_x2, double N_x2, double sigma_x2);
+    double calculateWeightedMeanY(double P_y1, double N_y1, double sigma_y1,double P_y2, double N_y2, double sigma_y2) ;    
     void SaveToCSV(G4ThreeVector posPhotons, G4int copyNo);
     void RecordSensorData(const std::string& volumeName, int ntupleIndex, double posX, double posY, int event, int copyNo, G4AnalysisManager* man);  
-    void FitHistogram(const std::vector<double>& Position);
+    void FitHistogram(const std::vector<double>& Position1, const std::vector<double>& Position2);
     std::vector<int>& GetSensor1CopyNumbers()  { return sensor1CopyNumbers; }
     G4bool ProcessHits(G4Step *, G4TouchableHistory*);
     void Initialize(G4HCofThisEvent*);

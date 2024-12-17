@@ -26,14 +26,20 @@ class SensorHit : public G4VHit {
   private:
     G4ThreeVector positionSensor;
     G4double energySensor;
-    G4int SensorNumberID; 
+    G4int SensorNumberID;
+    G4String VolumeNameID; 
 
   public:
     inline void SetSensorPosition(G4ThreeVector position) { positionSensor = position; };
     inline G4ThreeVector GetSensorPosition() const { return positionSensor; };
 
     inline void SetSensorNumber(G4int SensorNumber) { SensorNumberID = SensorNumber; }; 
-    inline G4int GetSensorNumber() const { return SensorNumberID; }; 
+    inline G4int GetSensorNumber() const { return SensorNumberID; };
+
+    inline void SetVolumeName(G4String VolumeName) { VolumeNameID = VolumeName; }; 
+    inline G4String GetVolumeName() const { return VolumeNameID; }; 
+
+ 
 
     inline void SetSensorEnergy(G4double energy) { energySensor = energy; };
     inline G4double GetSensorEnergy() const { return energySensor; };
