@@ -75,62 +75,99 @@ void MySensitiveDetector::RecordSensorData(const std::string& volumeName, int nt
 }
 
 // Calculate the weighted mean for the x-coordinate
-double  MySensitiveDetector::calculateWeightedMeanX(double Px1, double Nx1, double sigmax1) {
-    if (sigmax1 == 0 ) {
-        std::cout << "Error: Sigma values cannot be zero!" << G4endl;
+double MySensitiveDetector::calculateWeightedMeanX(double P_x1, double N_x1, double sigma_x1, 
+                                                   double P_x2, double N_x2, double sigma_x2) {
+    // Check for invalid sigma values
+    if (sigma_x1 == 0 || sigma_x2 == 0) {
+        std::cout << "Error: Sigma values cannot be zero!" << std::endl;
         return -1; // Return a sentinel value to indicate error
     }
-    return (Px1 * Nx1 / sigmax1 ) / (Nx1 / sigmax1 );
+
+    // Calculate the weighted mean
+    double numerator = (P_x1 * N_x1 / sigma_x1) + (P_x2 * N_x2 / sigma_x2);
+    double denominator = (N_x1 / sigma_x1) + (N_x2 / sigma_x2);
+
+    return numerator / denominator;
 }
 
-
-
-void MySensitiveDetector::FitHistogram(const std::vector<double>& Position) {
-    if (Position.empty()) return;
-
-    // Find min and max copy numbers
-    double min = *std::min_element(Position.begin(), Position.end());
-    double max = *std::max_element(Position.begin(), Position.end());
-    int bins = 50;
-
-    // Create histogram
-    
-     static int histCounter = 0; // Static counter for unique histogram names
-    TH1D* hist = new TH1D(Form("copy_%d", histCounter++), "Copy Number Distribution", bins, min, max);
-    for (int Pos : Position) {
-        hist->Fill(Pos);
+// Calculate the weighted mean for the y-coordinate
+double MySensitiveDetector::calculateWeightedMeanY(double P_y1, double N_y1, double sigma_y1, 
+                                                   double P_y2, double N_y2, double sigma_y2) {
+    // Check for invalid sigma values
+    if (sigma_y1 == 0 || sigma_y2 == 0) {
+        std::cout << "Error: Sigma values cannot be zero!" << std::endl;
+        return -1; // Return a sentinel value to indicate error
     }
 
-    // Fit the histogram with a Gaussian
-    TF1* gaussFit1 = new TF1("gaussFit", "gaus", min, max);
+    // Calculate the weighted mean
+    double numerator = (P_y1 * N_y1 / sigma_y1) + (P_y2 * N_y2 / sigma_y2);
+    double denominator = (N_y1 / sigma_y1) + (N_y2 / sigma_y2);
+
+    return numerator / denominator;
+}
+
+
+
+
+void MySensitiveDetector::FitHistogram(const std::vector<double>& Position1, const std::vector<double>& Position2) {
+    if (Position1.empty() || Position2.empty()) return;
+
+    // Find min and max values in Position1 and Position2 vectors
+    double min1 = *std::min_element(Position1.begin(), Position1.end());
+    double max1 = *std::max_element(Position1.begin(), Position1.end());
+    double min2 = *std::min_element(Position2.begin(), Position2.end());
+    double max2 = *std::max_element(Position2.begin(), Position2.end());
+
+    int bins = 50;
+
+    // Create histograms with unique names
+    static int histCounter1 = 0, histCounter2 = 0;
+    TH1D* hist1 = new TH1D(Form("copy1_%d", histCounter1++), "Sensor1 Distribution", bins, min1, max1);
+    TH1D* hist2 = new TH1D(Form("copy2_%d", histCounter2++), "Sensor2 Distribution", bins, min2, max2);
+
+    for (double Pos1 : Position1) hist1->Fill(Pos1);
+    for (double Pos2 : Position2) hist2->Fill(Pos2);
+
+    // Fit histograms with Gaussian functions
+    TF1* gaussFit1 = new TF1("gaussFit1", "gaus", min1, max1);
     gaussFit1->SetLineColor(kRed);
-    hist->Fit(gaussFit1, "R");
+    hist1->Fit(gaussFit1, "R");
+
+    TF1* gaussFit2 = new TF1("gaussFit2", "gaus", min2, max2);
+    gaussFit2->SetLineColor(kRed);
+    hist2->Fit(gaussFit2, "R");
 
     // Extract Gaussian fit parameters
-    double mean = gaussFit1->GetParameter(1);      // Mean (μ)
-    double sigma = gaussFit1->GetParameter(2);     // Standard deviation (σ)
-    double fwhm = 2.355 * sigma;                   // Full Width at Half Maximum (FWHM)
-    double amplitude = gaussFit1->GetParameter(0); // Amplitude (height of the peak)
+    double mean1 = gaussFit1->GetParameter(1);
+    double sigma1 = gaussFit1->GetParameter(2);
+    double amplitude1 = gaussFit1->GetParameter(0);
 
-    // Log results (or save to ntuple, etc.)
-    G4cout << "Gaussian Fit Results: "
-           << "Mean: " << mean << ", Sigma: " << sigma
-           << ", FWHM: " << fwhm << ", Amplitude: " << amplitude << G4endl;
+    double mean2 = gaussFit2->GetParameter(1);
+    double sigma2 = gaussFit2->GetParameter(2);
+    double amplitude2 = gaussFit2->GetParameter(0);
 
-    // Calculate x_position
-    double x_pos = calculateWeightedMeanX( mean, amplitude, sigma);
-    G4AnalysisManager *man = G4AnalysisManager::Instance();
-    man->FillNtupleDColumn(4, 0, x_pos);      
+    // Debugging outputs
+    G4cout << "Sensor1 Gaussian Fit: Mean=" << mean1 << ", Sigma=" << sigma1
+           << ", Amplitude=" << amplitude1 << G4endl;
+    G4cout << "Sensor2 Gaussian Fit: Mean=" << mean2 << ", Sigma=" << sigma2
+           << ", Amplitude=" << amplitude2 << G4endl;
+
+    // Calculate weighted mean
+    double y_pos = calculateWeightedMeanY(mean1, amplitude1, sigma1, mean2, amplitude2, sigma2);
+    G4cout << "Weighted Mean X: " << y_pos << G4endl;
+
+    // Store the result in ntuple
+    G4AnalysisManager* man = G4AnalysisManager::Instance();
+    man->FillNtupleDColumn(4, 0, y_pos/mm);
     man->AddNtupleRow(4);
 
-
-     //hist->Draw();
-
     // Cleanup
-    delete hist;
+    delete hist1;
+    delete hist2;
     delete gaussFit1;
-    //hist->Draw();
+    delete gaussFit2;
 }
+
 
 
 G4bool MySensitiveDetector::ProcessHits(G4Step *aStep, G4TouchableHistory*)        
@@ -172,25 +209,38 @@ G4bool MySensitiveDetector::ProcessHits(G4Step *aStep, G4TouchableHistory*)
         
        if (volumeName == "sensor_Vol1") {
           RecordSensorData(volumeName, 0, posDetector[0], posDetector[1], evt, copyNo, man);
-          
+
           aSensorHit->SetSensorPosition(postStepPoint->GetPosition());
           aSensorHit->SetSensorEnergy(track->GetKineticEnergy());
-          aSensorHit->SetSensorNumber(copyNo);
+          aSensorHit->SetVolumeName(volumeName);
+
           if (SensorCollection) {
              HitID = SensorCollection->insert(aSensorHit);
+            
           } else {
             G4cerr << "SensorCollection not initialized!" << G4endl;
             delete aSensorHit; // Avoid memory leaks
-          }
+            }
+       } else if (volumeName == "sensor_Vol2") {
+         // Create a new hit object for sensor_Vol2
+         SensorHit* anotherSensorHit = new SensorHit();
 
-          //} else {
-            //delete aSensorHit; // Prevent memory leaks
-          //}
-           // G4cout << "Deposited energy: " << fTotalEnergyDeposited << G4endl;
+         RecordSensorData(volumeName, 1, posDetector[0], posDetector[1], evt, copyNo, man);
 
-          /*
-          } else if (volumeName == "sensor_Vol2") {
-            RecordSensorData(volumeName, 1, posDetector[0], posDetector[1], evt, copyNo, man);
+         anotherSensorHit->SetSensorPosition(postStepPoint->GetPosition());
+         anotherSensorHit->SetSensorEnergy(track->GetKineticEnergy());
+         anotherSensorHit->SetVolumeName(volumeName);
+
+         if (SensorCollection) {
+            HitID = SensorCollection->insert(anotherSensorHit);
+
+         } else {
+           G4cerr << "SensorCollection not initialized!" << G4endl;
+           delete anotherSensorHit; // Avoid memory leaks
+           }
+       }
+
+         /*
             } else if (volumeName == "sensor_Vol3") {
               RecordSensorData(volumeName, 2, posDetector[0], posDetector[1], evt, copyNo, man);
               } else if (volumeName == "sensor_Vol4") {
@@ -201,8 +251,8 @@ G4bool MySensitiveDetector::ProcessHits(G4Step *aStep, G4TouchableHistory*)
          //  FitHistogram(sensor1CopyNumbers);
 
 
-       }
-  }     
+       
+    }     
 
 
     return true;
@@ -210,36 +260,44 @@ G4bool MySensitiveDetector::ProcessHits(G4Step *aStep, G4TouchableHistory*)
 }
 
 
-
 void MySensitiveDetector::EndOfEvent(G4HCofThisEvent* HCE) {
-    // Log the total number of hits for debuggin g
+    // Log the total number of hits for debugging
     G4int nHits = SensorCollection->entries();
-//    G4cout << "End of Event: Number of hits in SensorCollection: " << nHits << G4endl;
+    //G4cout << "End of Event: Number of hits in SensorCollection: " << nHits << G4endl;
 
     // Check if there are any hits
-if (nHits > 0) {
+    if (nHits > 0) {
+        std::vector<double> yPositions1, yPositions2; // For sensors 1 and 2
+        std::vector<double> xPositions1, xPositions2;
+        std::vector<G4int> sensor1CopyNumbers, sensor2CopyNumbers;
 
-    std::vector<double> yPositions; // Collect y-positions of hits
-    std::vector<double> xPositions; // Collect x-positions of hits
+        // Process hits
+        for (G4int i = 0; i < nHits; i++) {
+            SensorHit* hit = (*SensorCollection)[i];
+            G4ThreeVector position = hit->GetSensorPosition(); // Get the hit position
+            G4String VolumeName = hit->GetVolumeName();       // Copy number (optional)
 
-    // Optionally process hits
-    for (G4int i = 0; i < nHits; i++) {
-        SensorHit* hit = (*SensorCollection)[i];
-        //G4cout << "End of Event: Number of hits in SensorCollection: " << nHits << G4endl;
+            // Separate data based on the sensor volume name
+            if (VolumeName == "sensor_Vol1") { // For sensor_Vol1
+                xPositions1.push_back(position.x());
+                yPositions1.push_back(position.y());
+                //sensor1CopyNumbers.push_back(sensorNumber);
+            } else if (VolumeName == "sensor_Vol2") { // For sensor_Vol2
+                xPositions2.push_back(position.x());
+                yPositions2.push_back(position.y());
+                //sensor2CopyNumbers.push_back(sensorNumber);
+            }
+        }
 
-        /*G4cout << "Hit " << i << ": "
-               << "Position = " << hit->GetSensorPosition()
-               << ", Energy = " << hit->GetSensorEnergy()
-               << ", Sensor ID = " << hit->GetSensorNumber() << G4endl;*/
-        G4ThreeVector position = hit->GetSensorPosition(); // Get the hit position
-        yPositions.push_back(position.y()); // Store the y-coordinate
-        sensor1CopyNumbers.push_back(hit->GetSensorNumber());
+        // Output for debugging
+        G4cout << "Sensor_Vol1 Hits: " << yPositions1.size() 
+               << ", Sensor_Vol2 Hits: " << yPositions2.size() << G4endl;
+
+        // Perform Gaussian fits or any other processing
+        if (!yPositions1.empty() ||!yPositions2.empty()) {
+            FitHistogram(yPositions1,yPositions2); // Fit data for Sensor_Vol1 and Sensor_Vol2
+        }
+        
     }
-     G4cout << "End of Event: Number of hits in SensorCollection: " << nHits << G4endl;
-
-    // Fit the histogram with the collected data
-    FitHistogram(yPositions);
 }
-}
-
 

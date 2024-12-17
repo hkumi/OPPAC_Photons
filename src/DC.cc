@@ -1050,7 +1050,7 @@ void DC::ConstructSDandField()
 
 
     sensor_log1->SetSensitiveDetector(sensDet);   //left sensor
-   // sensor_log2->SetSensitiveDetector(sensDet);   //right sensor
+    sensor_log2->SetSensitiveDetector(sensDet);   //right sensor
     //sensor_log3->SetSensitiveDetector(sensDet);   //bottom sensor
     //sensor_log4->SetSensitiveDetector(sensDet);   //top sensor*/
 
