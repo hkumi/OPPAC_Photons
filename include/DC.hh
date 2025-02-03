@@ -6,6 +6,7 @@
 #include "G4VSolid.hh"
 #include "G4SubtractionSolid.hh"
 #include "detector.hh"
+#include "G4Sphere.hh"
 
 class G4LogicalVolume;
 class G4VPhysicalVolume;
@@ -21,6 +22,8 @@ class DC : public G4VUserDetectorConstruction
   public:
     virtual G4VPhysicalVolume* Construct();
     G4LogicalVolume *GetScoringVolume() const {return fScoringVolume_1;}
+    void Sphereball( G4double position);
+
   private:
     // Logical volumes
     G4LogicalVolume* experimentalHall_log;
@@ -51,7 +54,6 @@ class DC : public G4VUserDetectorConstruction
  private:
     void DefineMaterials();
     void ConstructLaboratory();
-   
     double dens;
     double collimatore;
     
