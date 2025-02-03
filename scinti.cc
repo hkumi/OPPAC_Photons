@@ -29,7 +29,6 @@
 
 //-------- User  <-- your classes
 #include "DC.hh" // <----- Geometry
-#include "PL.hh"          // <----- Physics
 #include "PG.hh"
 #include "RunAction.hh"     // <----- Run Action
 #include "StepAction.hh"     // <----- Step Action
@@ -38,10 +37,12 @@
 
 int main(int argc, char** argv)
 {
+    
+
     // Detect interactive mode (if no arguments or only a macro file)
     G4UIExecutive* ui = nullptr;
     int number_of_events = 1;
-    G4double collimatore = 5.0, density = 0.171316, pos_x = 0.0, pos_y = 0.0;
+    G4double collimatore = 20.0, density = 0.171316, pos_x = 0.0, pos_y = 0.0;
     G4String data_file;
 
     if (argc == 1)  
