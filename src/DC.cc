@@ -270,6 +270,31 @@ AuPropertiesTable->AddProperty("REFLECTIVITY", AuPM, AuReflectivity, iNbEntries_
   silicon->SetMaterialPropertiesTable(AuPropertiesTable);
 }
 
+
+void DC::Sphereball( G4double position) {
+     G4double minSphereradius = 0*mm;
+     G4double maxSphereradius = 30.0*mm;
+     G4Sphere* sphereball = new G4Sphere("sphereball", minSphereradius/2, maxSphereradius/2 , 0*deg,360*deg,0*deg,180*deg);
+     G4LogicalVolume* sphereVolume = new G4LogicalVolume(sphereball, polyethylene, "Sphere");
+     G4PVPlacement* spherePlacement  = new G4PVPlacement(0,
+                                               G4ThreeVector(0.*mm, 0.*mm, position),
+                                               sphereVolume,
+                                               "Sphere",
+                                               experimentalHall_log,
+                                               false,
+                                               0,true);
+     G4VisAttributes* blue = new G4VisAttributes(G4Colour::Blue());
+
+     blue->SetVisibility(true);
+     blue->SetForceAuxEdgeVisible(true);
+
+
+     sphereVolume->SetVisAttributes(blue);
+
+
+}
+
+
 void DC::ConstructLaboratory()
 {
   G4Material *Vacuum = G4Material::GetMaterial("Vacuum");
@@ -844,6 +869,9 @@ void DC::ConstructLaboratory()
 
 
 */
+
+
+  Sphereball(2.00*mm); 
   //===============PPAC DETECTOR===========================================================
   //polyethylene shield for neutron-proton conversion. =====================================
     // Create and place shield (polyethylene)
@@ -855,7 +883,7 @@ void DC::ConstructLaboratory()
   auto lShield = new G4LogicalVolume(shield, polyethylene, "Shield");
 
   auto pShield = new G4PVPlacement(0,
-                                      G4ThreeVector(0.0, 0.0,-1.5*mm-10*um-1.6*um),
+                                      G4ThreeVector(0.0, 0.0,-1.5*mm-10*um-1.6*um+10.0*cm),
                                       lShield,
                                       "Shield",
                                       experimentalHall_log,
@@ -874,7 +902,7 @@ void DC::ConstructLaboratory()
   G4double PPAC_drift_z = 1.5*mm;
   G4Box* PPAC_box = new G4Box("Drift Volume",PPAC_drift_x,PPAC_drift_y,PPAC_drift_z);
   PPAC_log = new G4LogicalVolume(PPAC_box,CF4,"PPAC_log",0,0,0);
-  PPAC_phys = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,0),PPAC_log,"PPAC_Vol",experimentalHall_log,false,0,true);
+  PPAC_phys = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,10.0*cm),PPAC_log,"PPAC_Vol",experimentalHall_log,false,0,true);
   //fScoringVolume_1 = PPAC_log;
  //.... using 3mm spacing between each collimator and placing the photo-sensor between each...............................................
  //Collimator Frame
@@ -973,7 +1001,7 @@ void DC::ConstructLaboratory()
   G4double cathode_z = 0.8*um;
   G4Box* cathode_box = new G4Box("cathode Volume",cathode_x,cathode_y,cathode_z);
   cathode_log = new G4LogicalVolume(cathode_box,PP,"cathode_log",0,0,0);
-  cathode_phys = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,1.5*mm+0.8*um),cathode_log,"cathode_Vol",experimentalHall_log,false,0,true);
+  cathode_phys = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,1.5*mm+0.8*um+10.0*cm),cathode_log,"cathode_Vol",experimentalHall_log,false,0,true);
 
   
   //anode
@@ -983,7 +1011,7 @@ void DC::ConstructLaboratory()
   G4double anode_z = 0.8*um;
   G4Box* anode_box = new G4Box("anode Volume",anode_x,anode_y,anode_z);
   anode_log = new G4LogicalVolume(anode_box,PP,"anode_log",0,0,0);
-  anode_phys = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,-1.5*mm-0.8*um),anode_log,"anode_Vol",experimentalHall_log,false,0,true);
+  anode_phys = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,-1.5*mm-0.8*um+10.0*cm),anode_log,"anode_Vol",experimentalHall_log,false,0,true);
 
 
 
@@ -1051,7 +1079,7 @@ void DC::ConstructSDandField()
 
     sensor_log1->SetSensitiveDetector(sensDet);   //left sensor
     sensor_log2->SetSensitiveDetector(sensDet);   //right sensor
-    //sensor_log3->SetSensitiveDetector(sensDet);   //bottom sensor
-    //sensor_log4->SetSensitiveDetector(sensDet);   //top sensor*/
+    sensor_log3->SetSensitiveDetector(sensDet);   //bottom sensor
+    sensor_log4->SetSensitiveDetector(sensDet);   //top sensor*/
 
 }

@@ -46,6 +46,8 @@ RunAction::RunAction()
   man->CreateNtuple("xposition","xposition");
   man->CreateNtupleDColumn("x");
   man->FinishNtuple(4);
+
+  man->CreateH2("xy1 ","xy1", 100, -100, 100, 100, -100, 100);
 /*
   man->CreateNtuple("yposition","yposition");
   man->CreateNtupleDColumn("y");
