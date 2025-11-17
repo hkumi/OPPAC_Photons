@@ -23,6 +23,8 @@ class DC : public G4VUserDetectorConstruction
     virtual G4VPhysicalVolume* Construct();
     G4LogicalVolume *GetScoringVolume() const {return fScoringVolume_1;}
     void Sphereball( G4double position);
+    void ConstructValve(G4double position,G4double ballOffset);
+
 
   private:
     // Logical volumes
