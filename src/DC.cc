@@ -36,14 +36,21 @@
 
 DC::DC(double density, double lunghezza_collimatore)
  :  experimentalHall_log(0),GAS_log(0),PPAC_log(0),SiPM_log(0),collf_log(0),coll_log(0),cathode_log(0),anode_log(0),cathodeAl_log(0),anodeAl_log(0),
-    experimentalHall_phys(0),GAS_phys(0),PPAC_phys(0),SiPM_phys(0),collf_phys(0),coll_phys(0),cathode_phys(0),anode_phys(0),cathodeAl_phys(0),anodeAl_phys(0)
+    experimentalHall_phys(0),GAS_phys(0),PPAC_phys(0),SiPM_phys(0),collf_phys(0),coll_phys(0),cathode_phys(0),anode_phys(0),cathodeAl_phys(0),anodeAl_phys(0),reflectMPT(nullptr), absorbMPT(nullptr), cf4SiSurface(nullptr)
 {
   dens = density;
   collimatore = lunghezza_collimatore;
 }
 
 DC::~DC()
-{;}
+{
+
+
+   // Clean up optical surfaces
+    if (reflectMPT) delete reflectMPT;
+    if (absorbMPT) delete absorbMPT; 
+    if (cf4SiSurface) delete cf4SiSurface;
+}
 
 G4VPhysicalVolume* DC::Construct()
 {
@@ -188,12 +195,6 @@ DC::DefineMaterials()
 						0.0034,0.0025,0.0000,0.0041,0.0025,0.0019,0.0042,0.0030,0.0000,0.0030,0.0000,0.0000,0.0000,0.0027,0.0000,0.0000,0.0000,0.0000,0.0006,
 						0.0051,0.0083,0.0000,0.0000,0.0064,0.0003,0.0002,0.0074,0.0038,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000};
 
-/*
-  const G4int iNbEntries = 2;
-  G4double CF4PhotonMomentum[iNbEntries] = {5*eV,4.5*eV};
-  G4double CF4Scintillation_Fast[iNbEntries] = {1,0};
-  G4double CF4Scintillation_Slow[iNbEntries] = {0,1};
-*/
 
   const G4int iNbEntries_1 = 3;
   G4double CF4PhotonMomentum_1[iNbEntries_1] = {200*eV,500*eV,798*eV};
@@ -233,10 +234,6 @@ DC::DefineMaterials()
   pTeflonPropertiesTable->AddProperty("ABSLENGTH", pdTeflonPhotonMomentum, pdTeflonAbsLength, TNbEntries);  
   pTeflonPropertiesTable->AddProperty("RAYLEIGH", pdTeflonPhotonMomentum, pdTeflonScatteringLength, TNbEntries);
   pTeflonPropertiesTable->AddProperty("REFLECTIVITY", pdTeflonPhotonMomentum, pdTeflonReflectivity, TNbEntries);
-//  pTeflonPropertiesTable->AddProperty("SPECULARLOBECONSTANT", pdTeflonPhotonMomentum, pdTeflonSpecularLobe, TNbEntries);
-//  pTeflonPropertiesTable->AddProperty("SPECULARSPIKECONSTANT", pdTeflonPhotonMomentum, pdTeflonSpecularSpike, TNbEntries);
-//  pTeflonPropertiesTable->AddProperty("BACKSCATTERCONSTANT", pdTeflonPhotonMomentum, pdTeflonBackscatter, TNbEntries);
-//  pTeflonPropertiesTable->AddProperty("EFFICIENCY", pdTeflonPhotonMomentum, pdTeflonEfficiency, TNbEntries);
   Teflon->SetMaterialPropertiesTable(pTeflonPropertiesTable);
 
 // 
@@ -262,14 +259,109 @@ AuPropertiesTable->AddProperty("RINDEX", AuPM, AuRefractiveIndex, iNbEntries_Au)
 AuPropertiesTable->AddProperty("ABSLENGTH", AuPM, AuAbsLength, iNbEntries_Au);  
 AuPropertiesTable->AddProperty("RAYLEIGH", AuPM, AuScatteringLength, iNbEntries_Au);
 AuPropertiesTable->AddProperty("REFLECTIVITY", AuPM, AuReflectivity, iNbEntries_Au);
-//  pTeflonPropertiesTable->AddProperty("SPECULARLOBECONSTANT", pdTeflonPhotonMomentum, pdTeflonSpecularLobe, TNbEntries);
-//  pTeflonPropertiesTable->AddProperty("SPECULARSPIKECONSTANT", pdTeflonPhotonMomentum, pdTeflonSpecularSpike, TNbEntries);
-//  pTeflonPropertiesTable->AddProperty("BACKSCATTERCONSTANT", pdTeflonPhotonMomentum, pdTeflonBackscatter, TNbEntries);
-//  pTeflonPropertiesTable->AddProperty("EFFICIENCY", pdTeflonPhotonMomentum, pdTeflonEfficiency, TNbEntries);
+////::::::::::::::::::: SURFACE PROPERTIES:::::::::::::::::::::
+//REFLECTING SURFACE (Aluminium cathode/anode)
+reflectMPT = new G4MaterialPropertiesTable();
+
+// Aluminium reflectivity - high in visible/UV range
+const G4int numEntriesAl = 11;
+G4double alPhotonEnergy[numEntriesAl] = {1.13*eV, 1.24*eV, 1.38*eV, 1.55*eV, 1.77*eV, 2.07*eV, 
+                                       2.48*eV, 3.10*eV, 4.13*eV, 6.20*eV, 6.53*eV};
+
+// Aluminium reflectivity (typical values - high reflectivity)
+G4double alReflectivity[numEntriesAl] = {
+    0.92, 0.92, 0.91, 0.90, 0.89, 0.87,
+    0.85, 0.82, 0.78, 0.70, 0.65
+};
+
+// Zero efficiency for metals (no transmission)
+G4double alEfficiency[numEntriesAl] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+
+reflectMPT->AddProperty("REFLECTIVITY", alPhotonEnergy, alReflectivity, numEntriesAl);
+reflectMPT->AddProperty("EFFICIENCY", alPhotonEnergy, alEfficiency, numEntriesAl);
+
+
+//ABSORBING SURFACE (Teflon collimators)
+absorbMPT = new G4MaterialPropertiesTable();
+
+// Teflon properties - low reflectivity, acts as absorber
+G4double teflonReflectivity[numEntriesAl] = {
+    0.05, 0.05, 0.05, 0.05, 0.05, 0.05,
+    0.05, 0.05, 0.05, 0.05, 0.05  // 5% reflectivity
+};
+
+// Zero efficiency - absorbs all transmitted light
+G4double teflonEfficiency[numEntriesAl] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+
+absorbMPT->AddProperty("REFLECTIVITY", alPhotonEnergy, teflonReflectivity, numEntriesAl);
+absorbMPT->AddProperty("EFFICIENCY", alPhotonEnergy, teflonEfficiency, numEntriesAl);
 
 //:::::::::::::::::::::::::::optical properties for silicon::::::::::::::::::::::::::::::::::::::::::::::
+ // =========================================================================
+    // BULK MATERIAL PROPERTIES TABLE
+    // =========================================================================
+    
+    G4MaterialPropertiesTable* siMPT = new G4MaterialPropertiesTable();
+    const G4int iNbEntries_Si = 11;
+    
+    G4double SiPM[iNbEntries_Si]  = {1.13*eV, 1.24*eV, 1.38*eV, 1.55*eV, 1.77*eV, 2.07*eV, 2.48*eV, 3.10*eV, 4.13*eV, 6.20*eV, 6.53*eV};// Define all photon energies (in eV)
+    G4double SiRefractiveIndex[iNbEntries_Si] = {3.60, 3.64, 3.68, 3.73, 3.81, 3.94, 4.30, 5.57, 4.63, 1.78, 1.65};     // Refractive index (n)
+    //G4double SiRefractiveIndex[iNbEntries_Si] = {1.25,0.86,0.75,3.56};
+    G4double SiAbsLength[iNbEntries_Si] = {10.0000*mm, 5.00000*mm, 2.00000*mm, 0.50000*mm, 0.10000*mm, 0.03000*mm, 0.01000*mm, 0.00100*mm, 0.00010*mm, 0.00001*mm, 0.00001*mm};       // Absorption length
+    G4double SiScatteringLength[iNbEntries_Si] = {10000.0*m, 10000.0*m, 10000.0*m, 10000.0*m, 10000.0*m, 1000.0*m, 100.0*m, 10.0*m, 1.0*m, 0.1*m, 0.1*m};  // Rayleigh scattering length (typically very long for pure silicon)
 
-  silicon->SetMaterialPropertiesTable(AuPropertiesTable);
+
+    siMPT->AddProperty("RINDEX", SiPM, SiRefractiveIndex, iNbEntries_Si);
+    siMPT->AddProperty("ABSLENGTH", SiPM, SiAbsLength, iNbEntries_Si);   
+    siMPT->AddProperty("RAYLEIGH", SiPM, SiScatteringLength, iNbEntries_Si);
+    //SiMPT->AddProperty("REFLECTIVITY", SiPM, SiReflectivity, iNbEntries_Si);
+    siMPT->AddConstProperty("RESOLUTIONSCALE", 1.0);
+
+    silicon->SetMaterialPropertiesTable(siMPT);
+
+    // =========================================================================
+        // CF4 - SILICON OPTICAL BOUNDARY SURFACE
+    // =========================================================================
+
+       // Create optical surface for CF4-Si interface
+    cf4SiSurface = new G4OpticalSurface("CF4_Si_Surface");
+    cf4SiSurface->SetType(dielectric_dielectric);
+    cf4SiSurface->SetFinish(polished);
+    cf4SiSurface->SetModel(glisur);
+
+    // CF4 refractive index (approximately 1.0005 - close to vacuum)
+    G4double cf4Rindex[iNbEntries_Si] = {1.0005, 1.0005, 1.0005, 1.0005, 1.0005, 1.0005,1.0005, 1.0005, 1.0005, 1.0005, 1.0005};
+    // Calculate reflectivity using Fresnel equations for CF4-Si interface
+    G4double reflectivity[iNbEntries_Si];
+    for (int i=0; i<iNbEntries_Si; i++) {
+        G4double n1 = cf4Rindex[i]; // CF4 refractive index
+        G4double n2 = SiRefractiveIndex[i];  // Silicon refractive index
+        // Fresnel equation for normal incidence: R = [(n2-n1)/(n2+n1)]^2
+        reflectivity[i] = ((n2 - n1) / (n2 + n1)) * ((n2 - n1) / (n2 + n1));
+    }
+
+
+    // Typical silicon photodetector efficiency 
+    G4double efficiency[iNbEntries_Si] = {
+     0.10,  // 1100 nm - lower efficiency in IR
+     0.15,  // 1000 nm
+     0.20,  // 900 nm
+     0.25,  // 800 nm  
+     0.30,  // 700 nm
+     0.40,  // 600 nm
+     0.60,  // 500 nm - peak efficiency in green
+     0.80,  // 400 nm - high efficiency in blue/UV
+     0.70,  // 300 nm - decreasing in deep UV
+     0.50,  // 200 nm
+     0.30   // 190 nm
+    };
+
+    G4MaterialPropertiesTable* cf4SiSurfMPT = new G4MaterialPropertiesTable();
+    cf4SiSurfMPT->AddProperty("REFLECTIVITY", SiPM, reflectivity, iNbEntries_Si);
+    cf4SiSurfMPT->AddProperty("EFFICIENCY", SiPM, efficiency, iNbEntries_Si);
+
+    cf4SiSurface->SetMaterialPropertiesTable(cf4SiSurfMPT);
+
 }
 
 
@@ -931,7 +1023,7 @@ void DC::ConstructLaboratory()
 
 
   //Sphereball(20.00*cm);
-  ConstructValve(20.00*cm,0*cm);
+//  ConstructValve(20.00*cm,0*cm);
   //===============PPAC DETECTOR===========================================================
   //polyethylene shield for neutron-proton conversion. =====================================
     // Create and place shield (polyethylene)
@@ -1086,7 +1178,6 @@ void DC::ConstructLaboratory()
 
 
 
-
   //Anode - AL
   //Particle drift volume
   G4double anodeAl_x = 50.0*mm+collimatore;
@@ -1098,29 +1189,38 @@ void DC::ConstructLaboratory()
 
 
   // ------------------------------- Surfaces -----------------------------------------------
-  // ------------------------- Optical Propertiers ------------------------------------------
- 
-  // surface reflecting
+  // =========================================================================
+       // Optical Properties
+// =========================================================================
+
+  // surface reflecting (Aluminium electrodes)
   G4OpticalSurface* oppac_Al_gas = new G4OpticalSurface("Reflecting");
   oppac_Al_gas->SetModel(unified);
   oppac_Al_gas->SetType(dielectric_metal);
   oppac_Al_gas->SetFinish(polished);
+  oppac_Al_gas->SetMaterialPropertiesTable(reflectMPT);
+
   G4LogicalBorderSurface* oppac_1 = new G4LogicalBorderSurface("oppac_1",PPAC_phys,cathodeAl_phys,oppac_Al_gas);
   G4LogicalBorderSurface* oppac_2 = new G4LogicalBorderSurface("oppac_2",PPAC_phys,anodeAl_phys,oppac_Al_gas);
   G4LogicalBorderSurface* oppac_3 = new G4LogicalBorderSurface("oppac_3",coll_phys,cathodeAl_phys,oppac_Al_gas);
   G4LogicalBorderSurface* oppac_4 = new G4LogicalBorderSurface("oppac_4",coll_phys,anodeAl_phys,oppac_Al_gas);
 
- // surface assorbing
+ // surface assorbing  (Teflon collimators)
   G4OpticalSurface* oppac_ab = new G4OpticalSurface("Absorbing");
   oppac_ab->SetModel(unified);
   oppac_ab->SetType(dielectric_dielectric);
-//  oppac_ab->SetFinish(polished);
-//  oppac_ab->SetFinish(polishedbackpainted);
   oppac_ab->SetFinish(ground);
+  oppac_ab->SetMaterialPropertiesTable(absorbMPT); 
+  
   G4LogicalSkinSurface* oppac_10 = new G4LogicalSkinSurface("caccola_1",collf_log,oppac_ab);
   G4LogicalSkinSurface* oppac_11 = new G4LogicalSkinSurface("caccola_2",coll_log,oppac_ab);
 
+  // CF4-Silicon detector surface
 
+  G4LogicalSkinSurface* cf4si_1 = new G4LogicalSkinSurface("cf4si_1", sensor_log1, cf4SiSurface);
+  G4LogicalSkinSurface* cf4si_2 = new G4LogicalSkinSurface("cf4si_2", sensor_log2, cf4SiSurface);
+  G4LogicalSkinSurface* cf4si_3 = new G4LogicalSkinSurface("cf4si_3", sensor_log3, cf4SiSurface);
+  G4LogicalSkinSurface* cf4si_4 = new G4LogicalSkinSurface("cf4si_4", sensor_log4, cf4SiSurface); 
  
 }
 

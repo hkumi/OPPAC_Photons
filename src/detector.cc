@@ -371,7 +371,7 @@ void MySensitiveDetector::EndOfEvent(G4HCofThisEvent* HCE) {
             FitHistogram(xPositions1, xPositions2, yPositions1, yPositions2);
 
         }
-        
+
     }
 }
 
