@@ -7,6 +7,7 @@
 #include "G4SubtractionSolid.hh"
 #include "detector.hh"
 #include "G4Sphere.hh"
+#include "G4OpticalSurface.hh"
 
 class G4LogicalVolume;
 class G4VPhysicalVolume;
@@ -83,7 +84,9 @@ class DC : public G4VUserDetectorConstruction
     G4Material  *b_polyethylene,  *polyethylene, *NaI,*mat_graphite;
     G4Material  *leadMaterial,*Aluminium,*PP,*silicon;
     G4Element  *Na, *I, *C,*Al;
-    
+    G4MaterialPropertiesTable* reflectMPT;
+    G4MaterialPropertiesTable* absorbMPT; 
+    G4OpticalSurface* cf4SiSurface;    
     virtual void ConstructSDandField();  
 
 };
