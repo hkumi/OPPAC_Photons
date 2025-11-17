@@ -66,9 +66,9 @@ void StepAction::UserSteppingAction(const G4Step* aStep)
 {
 
   //G4cout << aStep->GetPostStepPoint()->GetTouchableHandle()->GetVolume()->GetName() << G4endl;
-if ( aStep->GetTrack()->GetDefinition()->GetParticleName() == "opticalphoton" && 
-     aStep->GetPreStepPoint()->GetTouchableHandle()->GetVolume()->GetName()== "PPAC_Vol" &&
-     aStep->GetPostStepPoint()->GetTouchableHandle()->GetVolume()->GetName() == "expHall")   
+if ( aStep->GetTrack()->GetDefinition()->GetParticleName() == "proton" && aStep->GetPostStepPoint()->GetProcessDefinedStep() != nullptr
+    /* aStep->GetPreStepPoint()->GetTouchableHandle()->GetVolume()->GetName()== "PPAC_Vol" &&
+     aStep->GetPostStepPoint()->GetTouchableHandle()->GetVolume()->GetName() == "expHall"*/)   
   {   
 
       G4AnalysisManager *man = G4AnalysisManager::Instance();   
@@ -79,7 +79,24 @@ if ( aStep->GetTrack()->GetDefinition()->GetParticleName() == "opticalphoton" &&
     
       G4LogicalVolume* fScoringVolume_1 = detectorConstruction->GetScoringVolume();
       G4Track *track = aStep->GetTrack();
+      G4StepPoint *preStepPoint; 
+      G4StepPoint *postStepPoint ;   
       if (volume != fScoringVolume_1) return;          
+
+       
+        if (aStep->IsFirstStepInVolume()){
+           preStepPoint = aStep->GetPreStepPoint();
+           postStepPoint = aStep->GetPostStepPoint();
+           
+           G4ThreeVector posPhoton2 = postStepPoint->GetPosition()/cm;
+
+           man->FillH2(1, posPhoton2[0], posPhoton2[1]);
+          
+
+           
+
+
+        }
 
 /*      
       //G4cout << aStep->GetPostStepPoint()->GetTouchableHandle()->GetVolume()->GetName() << G4endl;

@@ -25,6 +25,8 @@
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 #include "CLHEP/Units/SystemOfUnits.h"
+#include "G4TessellatedSolid.hh"
+#include "G4TriangularFacet.hh"
 
 #include "G4Isotope.hh"
 #include "G4Element.hh"
@@ -272,8 +274,8 @@ AuPropertiesTable->AddProperty("REFLECTIVITY", AuPM, AuReflectivity, iNbEntries_
 
 
 void DC::Sphereball( G4double position) {
-     G4double minSphereradius = 0*mm;
-     G4double maxSphereradius = 30.0*mm;
+     G4double minSphereradius = 0*cm;
+     G4double maxSphereradius = 20.0*cm;
      G4Sphere* sphereball = new G4Sphere("sphereball", minSphereradius/2, maxSphereradius/2 , 0*deg,360*deg,0*deg,180*deg);
      G4LogicalVolume* sphereVolume = new G4LogicalVolume(sphereball, polyethylene, "Sphere");
      G4PVPlacement* spherePlacement  = new G4PVPlacement(0,
@@ -293,6 +295,63 @@ void DC::Sphereball( G4double position) {
 
 
 }
+
+void DC::ConstructValve(G4double position, G4double ballOffset) {
+    G4NistManager* nist = G4NistManager::Instance();
+
+    // Define dimensions
+    G4double valveLength = 20.0 * cm;
+    G4double valveRadius = 5.0 * cm;
+    G4double passageRadius = 3.0 * cm;
+    G4double ballRadius = 4.0 * cm;
+
+    // Materials
+    G4Material* steel = nist->FindOrBuildMaterial("G4_STAINLESS-STEEL");
+    G4Material* water = nist->FindOrBuildMaterial("G4_WATER");
+
+    // **Step 1: Main Valve Body (Cylinder)**
+    G4Tubs* valveBody = new G4Tubs("ValveBody", 0, valveRadius, valveLength/2, 0, 360*deg);
+
+    // **Step 2: Hollow Passage (Subtracted Cylinder)**
+    G4Tubs* flowPassage = new G4Tubs("FlowPassage", 0, passageRadius, valveLength, 0, 360*deg);
+    G4SubtractionSolid* hollowValve = new G4SubtractionSolid("HollowValve", valveBody, flowPassage);
+
+    // **Step 3: Ball Inside the Valve**
+    G4Sphere* ball = new G4Sphere("ValveBall", 0, ballRadius, 0, 360*deg, 0, 180*deg);
+
+    // Position the ball inside the valve (use ballOffset to "open/close")
+    G4ThreeVector ballPosition(0, 0, ballOffset); // Adjust position dynamically
+    G4SubtractionSolid* finalValve = new G4SubtractionSolid("FinalValve", hollowValve, ball, 0, ballPosition);
+
+    // **Step 4: Create Logical Volume**
+    G4LogicalVolume* valveLogic = new G4LogicalVolume(finalValve, steel, "ValveLogic");
+
+    // **Step 5: Place in World**
+    new G4PVPlacement(0, G4ThreeVector(0, 0, position), valveLogic, "ValvePhys", experimentalHall_log, false, 0, true);
+
+/*    // **Step 6: Define the Fluid (Water) inside the passage**
+    G4LogicalVolume* waterLogic = new G4LogicalVolume(flowPassage, water, "WaterLogic");
+    new G4PVPlacement(0, G4ThreeVector(0, 0, position), waterLogic, "WaterPhys", experimentalHall_log, false, 0, true);
+*/
+     G4VisAttributes* blue = new G4VisAttributes(G4Colour::Blue());
+
+     blue->SetVisibility(true);
+     blue->SetForceAuxEdgeVisible(true);
+
+
+     valveLogic->SetVisAttributes(blue);
+
+     G4VisAttributes* red = new G4VisAttributes(G4Colour::Red());
+
+     red->SetVisibility(true);
+     red->SetForceAuxEdgeVisible(true);
+
+/*
+     waterLogic->SetVisAttributes(red);
+
+*/
+}
+
 
 
 void DC::ConstructLaboratory()
@@ -871,7 +930,8 @@ void DC::ConstructLaboratory()
 */
 
 
-  Sphereball(2.00*mm); 
+  //Sphereball(20.00*cm);
+  ConstructValve(20.00*cm,0*cm);
   //===============PPAC DETECTOR===========================================================
   //polyethylene shield for neutron-proton conversion. =====================================
     // Create and place shield (polyethylene)
@@ -883,7 +943,7 @@ void DC::ConstructLaboratory()
   auto lShield = new G4LogicalVolume(shield, polyethylene, "Shield");
 
   auto pShield = new G4PVPlacement(0,
-                                      G4ThreeVector(0.0, 0.0,-1.5*mm-10*um-1.6*um+10.0*cm),
+                                      G4ThreeVector(0.0, 0.0,-1.5*mm-10*um-1.6*um+70.0*cm),
                                       lShield,
                                       "Shield",
                                       experimentalHall_log,
@@ -902,8 +962,8 @@ void DC::ConstructLaboratory()
   G4double PPAC_drift_z = 1.5*mm;
   G4Box* PPAC_box = new G4Box("Drift Volume",PPAC_drift_x,PPAC_drift_y,PPAC_drift_z);
   PPAC_log = new G4LogicalVolume(PPAC_box,CF4,"PPAC_log",0,0,0);
-  PPAC_phys = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,10.0*cm),PPAC_log,"PPAC_Vol",experimentalHall_log,false,0,true);
-  //fScoringVolume_1 = PPAC_log;
+  PPAC_phys = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,70.0*cm),PPAC_log,"PPAC_Vol",experimentalHall_log,false,0,true);
+  fScoringVolume_1 = PPAC_log;
  //.... using 3mm spacing between each collimator and placing the photo-sensor between each...............................................
  //Collimator Frame
   //Teflon
@@ -1001,7 +1061,7 @@ void DC::ConstructLaboratory()
   G4double cathode_z = 0.8*um;
   G4Box* cathode_box = new G4Box("cathode Volume",cathode_x,cathode_y,cathode_z);
   cathode_log = new G4LogicalVolume(cathode_box,PP,"cathode_log",0,0,0);
-  cathode_phys = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,1.5*mm+0.8*um+10.0*cm),cathode_log,"cathode_Vol",experimentalHall_log,false,0,true);
+  cathode_phys = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,1.5*mm+0.8*um+70.0*cm),cathode_log,"cathode_Vol",experimentalHall_log,false,0,true);
 
   
   //anode
@@ -1011,7 +1071,7 @@ void DC::ConstructLaboratory()
   G4double anode_z = 0.8*um;
   G4Box* anode_box = new G4Box("anode Volume",anode_x,anode_y,anode_z);
   anode_log = new G4LogicalVolume(anode_box,PP,"anode_log",0,0,0);
-  anode_phys = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,-1.5*mm-0.8*um+10.0*cm),anode_log,"anode_Vol",experimentalHall_log,false,0,true);
+  anode_phys = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,-1.5*mm-0.8*um+70.0*cm),anode_log,"anode_Vol",experimentalHall_log,false,0,true);
 
 
 
@@ -1070,7 +1130,7 @@ void DC::ConstructLaboratory()
 void DC::ConstructSDandField()
 
 {
-
+/*
     MySensitiveDetector *sensDet = new MySensitiveDetector("SensitiveDetector");
 
     G4SDManager* SDman = G4SDManager::GetSDMpointer();
@@ -1080,6 +1140,6 @@ void DC::ConstructSDandField()
     sensor_log1->SetSensitiveDetector(sensDet);   //left sensor
     sensor_log2->SetSensitiveDetector(sensDet);   //right sensor
     sensor_log3->SetSensitiveDetector(sensDet);   //bottom sensor
-    sensor_log4->SetSensitiveDetector(sensDet);   //top sensor*/
-
+    sensor_log4->SetSensitiveDetector(sensDet);   //top sensor
+*/
 }
