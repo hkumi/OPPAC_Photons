@@ -1,117 +1,125 @@
+//
+// ********************************************************************
+// * License and Disclaimer                                           *
+// *                                                                  *
+// * The  Geant4 software  is  copyright of the Copyright Holders  of *
+// * the Geant4 Collaboration.  It is provided  under  the terms  and *
+// * conditions of the Geant4 Software License,  included in the file *
+// * LICENSE and available at  http://cern.ch/geant4/license .  These *
+// * include a list of copyright holders.                             *
+// *                                                                  *
+// * Neither the authors of this software system, nor their employing *
+// * institutes,nor the agencies providing financial support for this *
+// * work  make  any representation or  warranty, express or implied, *
+// * regarding  this  software system or assume any liability for its *
+// * use.  Please see the license in the file  LICENSE  and URL above *
+// * for the full disclaimer and the limitation of liability.         *
+// *                                                                  *
+// * This  code  implementation is the result of  the  scientific and *
+// * technical work of the GEANT4 collaboration.                      *
+// * By using,  copying,  modifying or  distributing the software (or *
+// * any work based  on the software)  you  agree  to acknowledge its *
+// * use  in  resulting  scientific  publications,  and indicate your *
+// * acceptance of all terms of the Geant4 Software license.          *
+// ********************************************************************
+//
+//
+/// \file B4/B4a/src/RunAction.cc
+/// \brief Implementation of the B4::RunAction class
+
 #include "RunAction.hh"
-#include "Run.hh"
-#include "G4Run.hh" 
-#include "G4SDManager.hh"
+
+#include "G4AnalysisManager.hh"
+#include "G4Run.hh"
+#include "G4RunManager.hh"
 #include "G4UnitsTable.hh"
-#include <assert.h>
+#include "G4SystemOfUnits.hh"
 
-RunAction::RunAction()
+
+namespace B4
 {
-  //theSDName.push_back(G4String("IonPro"));
-  G4AnalysisManager *man = G4AnalysisManager::Instance();
-  man->SetNtupleMerging(true);
-  man->SetVerboseLevel( 1 );
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+    RunAction::RunAction()
+    {
+      // set printing event number per each event
+      G4RunManager::GetRunManager()->SetPrintProgress(1);
+
+      // Create analysis manager
+      // The choice of the output format is done via the specified
+      // file extension.
+      auto analysisManager = G4AnalysisManager::Instance();
+
+      // Create directories
+      //analysisManager->SetHistoDirectoryName("histograms");
+      //analysisManager->SetNtupleDirectoryName("ntuple");
+      analysisManager->SetVerboseLevel(1);
+      analysisManager->SetNtupleMerging(true);
+
+      // Book histograms, ntuple
+      //
+
+      // Creating histograms
+      
+      analysisManager->CreateH1("Energy_SiPM", "Photon spectrum in SiPMs", 100, 1.5 * eV, 6 * eV, "eV", "none");
+      analysisManager->CreateH1("SiPM_bottom", "Number of photons detected in top array", 25, 0, 25);
+      analysisManager->CreateH1("SiPM_left", "Number of photons detected in left array", 25, 0, 25);
+      analysisManager->CreateH1("SiPM_up", "Number of photons detected in bottom array", 25, 0, 25);
+      analysisManager->CreateH1("SiPM_right", "Number of photons detected in right array", 25, 0, 25);
+
+	  //analysisManager->CreateH1("proton_energy", "Recoil proton energy", 100, pow(10, -8) * MeV, 1 * MeV, "MeV", "none", "log");
+      analysisManager->CreateH1("proton_conv", "Recoil proton energy", 1000, 0, 2 * MeV, "keV", "none");
+      analysisManager->CreateH1("proton_myl", "Protons reaching mylar sheet", 1000, 0, 2 * MeV, "keV", "none");
+      analysisManager->CreateH1("proton_gas", "Protons reaching gas volume", 1000, 0, 2 * MeV, "keV", "none");
+
+        
+
+      analysisManager->CreateNtuple("B4", "Energy");
+      analysisManager->CreateNtupleDColumn("WSF");
+      analysisManager->CreateNtupleDColumn("SiPM");
+      analysisManager->CreateNtupleDColumn("InitialEnergy");
+      
+      analysisManager->FinishNtuple();
+    }
+
+    //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+    void RunAction::BeginOfRunAction(const G4Run* /*run*/)
+    {
+      //inform the runManager to save random number seed
+      //G4RunManager::GetRunManager()->SetRandomNumberStore(true);
+
+      // Get analysis manager
+      auto analysisManager = G4AnalysisManager::Instance();
+
+      // Open an output file
+      //
+      G4String fileName = "B4.root";
+      // Other supported output types:
+      // G4String fileName = "B4.csv";
+      // G4String fileName = "B4.hdf5";
+      // G4String fileName = "B4.xml";
+      analysisManager->OpenFile(fileName);
+      G4cout << "Using " << analysisManager->GetType() << G4endl;
+    }
+
+    //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+    void RunAction::EndOfRunAction(const G4Run* /*run*/)
+    {
+      // print histogram statistics
+      //
     
-
-  man->CreateNtuple("LeftData1", "LeftData1");
-  man->CreateNtupleDColumn("x");
-  man->CreateNtupleDColumn("y");
-  man->CreateNtupleDColumn("z");
-  man->CreateNtupleIColumn("copyNo");
-  man->FinishNtuple(0);
-
-  man->CreateNtuple("RightData2", "RightData2");
-  man->CreateNtupleDColumn("x");
-  man->CreateNtupleDColumn("y");
-  man->CreateNtupleDColumn("z");
-  man->CreateNtupleIColumn("copyNo");
-  man->FinishNtuple(1);
-
-  man->CreateNtuple("BottomData3", "BottomData3");
-  man->CreateNtupleDColumn("x");
-  man->CreateNtupleDColumn("y");
-  man->CreateNtupleDColumn("z");
-  man->CreateNtupleIColumn("copyNo");
-  man->FinishNtuple(2);
-
-  man->CreateNtuple("TopData4", "TopData4");
-  man->CreateNtupleDColumn("x");
-  man->CreateNtupleDColumn("y");
-  man->CreateNtupleDColumn("z");
-  man->CreateNtupleIColumn("copyNo");
-  man->FinishNtuple(3);
-
-    
- 
-  man->CreateNtuple("xposition","xposition");
-  man->CreateNtupleDColumn("x");
-  man->FinishNtuple(4);
-
-  man->CreateH2("xy1 ","xy1", 100, -30, 30, 100, -30, 30);
-  man->CreateH2("xy2 ","xy2", 100, -30, 30, 100, -30, 30);
-
-/*
-  man->CreateNtuple("yposition","yposition");
-  man->CreateNtupleDColumn("y");
-  man->FinishNtuple(1);
+      auto analysisManager = G4AnalysisManager::Instance();
 
 
-  man->CreateNtuple("SiPM","siPM");
-  man->CreateNtupleDColumn("Number");
-  man->FinishNtuple(2);
+      // save histograms & ntuple
+      //
+      analysisManager->Write();
+      analysisManager->CloseFile();
+    }
 
-  man->CreateNtuple("time","time");
-  man->CreateNtupleDColumn("time");
-  man->FinishNtuple(3);
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-  man->CreateNtuple("Edep","Edep");
-  man->CreateNtupleDColumn("Edep");
-  man->FinishNtuple(4);
-
-
-  man->CreateH2("xy1 ","xy1", 100, -60, 60, 100, -60, 60);*/
-
-
-
-
-}
-
-RunAction::~RunAction()
-{
-  //theSDName.clear();
-}
-/*
-G4Run* RunAction::GenerateRun()
-{ 
- // return new Run(theSDName);
-}*/
-
-void RunAction::BeginOfRunAction(const G4Run* aRun)
-{
- G4cout << "*** Run " << aRun->GetRunID() << " start." << G4endl;
-
- G4AnalysisManager *man = G4AnalysisManager::Instance();
-
- G4int runID = aRun->GetRunID();
-
- std::stringstream strRunID;
- strRunID << runID;
-
- 
- G4String filename = "output" + strRunID.str() + ".root";
- man->OpenFile(filename);
- G4cout << "Output file opened: " << filename <<G4endl; // Debugging line
-
-}
-
-void RunAction::EndOfRunAction(const G4Run* aRun)
-{
- // static G4String regName = "IonPro";
-  //Run* Run_verbose = (Run*)aRun;
-
-  G4AnalysisManager *man = G4AnalysisManager::Instance();
-
-  man->Write();
-  man->CloseFile();
-  G4cout << "Output file closed." << G4endl; // Debugging line
 }

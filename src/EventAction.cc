@@ -24,45 +24,70 @@
 // ********************************************************************
 //
 //
-/// \file B4/B4a/src/ActionInitialization.cc
-/// \brief Implementation of the B4a::ActionInitialization class
+/// \file B4/B4a/src/EventAction.cc
+/// \brief Implementation of the B4a::EventAction class
 
-#include "ActionInitialization.hh"
-#include "PrimaryGeneratorAction.hh"
-#include "RunAction.hh"
 #include "EventAction.hh"
-#include "SteppingAction.hh"
-#include "DetectorConstruction.hh"
+#include "RunAction.hh"
 
-using namespace B4;
+#include "G4AnalysisManager.hh"
+#include "G4RunManager.hh"
+#include "G4Event.hh"
+#include "G4UnitsTable.hh"
+
+#include "Randomize.hh"
+#include <iomanip>
 
 namespace B4a
 {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-ActionInitialization::ActionInitialization(DetectorConstruction* detConstruction)
- : fDetConstruction(detConstruction)
-{}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void ActionInitialization::BuildForMaster() const
+void EventAction::BeginOfEventAction(const G4Event* /*event*/)
 {
-  SetUserAction(new RunAction);
+  // initialisation per event
+  fEnergySiPM = 0.;
+  fEnergySiPM2 = 0.;
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ActionInitialization::Build() const
+void EventAction::EndOfEventAction(const G4Event* event)
 {
-  SetUserAction(new PrimaryGeneratorAction);
-  SetUserAction(new RunAction);
-  auto eventAction = new EventAction;
-  SetUserAction(eventAction);
-  SetUserAction(new SteppingAction(fDetConstruction,eventAction));
+
+
+  G4int nPrimaries = event->GetNumberOfPrimaryVertex();
+
+  for (G4int iVertex = 0; iVertex < nPrimaries; ++iVertex) {
+      G4PrimaryVertex* vertex = event->GetPrimaryVertex(iVertex);
+
+      G4PrimaryParticle* primary = vertex->GetPrimary();
+
+      //G4cout << "PDG code: " << primary->GetPDGcode() << G4endl;
+
+      if (primary->GetPDGcode() == 2112) { // neutron=2112; gamma=22
+          // get analysis manager
+          auto analysisManager = G4AnalysisManager::Instance();
+
+          // fill histograms
+         // analysisManager->FillH1(0, fEnergyDet);
+
+
+          // fill ntuple
+          //analysisManager->FillNtupleDColumn(0, fEnergyDet);
+         // analysisManager->AddNtupleRow();
+
+          // Print per event (modulo n)
+          //
+          auto eventID = event->GetEventID();
+          auto printModulo = G4RunManager::GetRunManager()->GetPrintProgress();
+          
+
+      }
+  }
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
 
-}
+} 
