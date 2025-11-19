@@ -3,7 +3,7 @@
 #
 /run/initialize
 # Use this open statement to create an OpenGL view:
-/vis/open OGL 600x600-0+0
+/vis/open OGL 
 /vis/viewer/set/autoRefresh false
 /vis/verbose errors
 # Draw geometry:
@@ -20,4 +20,3 @@
 # Re-establish auto refreshing and verbosity:
 /vis/viewer/set/autoRefresh true
 /vis/verbose warnings
-

@@ -1,16 +1,8 @@
-# $Id: CMakeLists.txt 68058 2013-03-13 14:47:43Z gcosmo $
-# usage: cmake -DGeant4_DIR=$G4HOME ../oppac_1
-
 #----------------------------------------------------------------------------
 # Setup the project
 #
-
 cmake_minimum_required(VERSION 3.16...3.27)
-project(scinti)
-
-#set(CMAKE_CXX_STANDARD 14 CACHE STRING "C++ Standard Version")
-
-#set(CMAKE_CXX_STANDARD_REQUIRED ON)
+project(B4a)
 
 #----------------------------------------------------------------------------
 # Find Geant4 package, activating all available UI and Vis drivers by default
@@ -24,29 +16,12 @@ else()
   find_package(Geant4 REQUIRED)
 endif()
 
-
 #----------------------------------------------------------------------------
 # Setup Geant4 include directories and compile definitions
 # Setup include directory for this project
 #
 include(${Geant4_USE_FILE})
-#include_directories(${PROJECT_SOURCE_DIR}/include)
-
-
-# Find ROOT (required package)
-#
-find_package(ROOT REQUIRED)
-#include_directories(${ROOT_INCLUDE_DIRS})
-#link_directories(${ROOT_LIBRARY_DIR})
-#add_definitions(${ROOT_CXX_FLAGS})
-include_directories(${PROJECT_SOURCE_DIR}/include
-                    ${PROJECT_SOURCE_DIR}/shared/include
-                    ${Geant4_INCLUDE_DIR}
-                    ${ROOT_INCLUDE_DIRS})
-
-# Add ROOT-specific definitions to avoid conflicts
-#add_definitions(-DROOT_R__NO_STRING_VIEW)  # Prevent conflicts with std::string_view
-#add_definitions(${ROOT_CXX_FLAGS})
+include_directories(${PROJECT_SOURCE_DIR}/include)
 
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
@@ -58,24 +33,30 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
-add_executable(exe_scinti scinti.cc ${sources} ${headers})
-#target_link_libraries(exe_scinti ${Geant4_LIBRARIES})
-target_link_libraries(exe_scinti ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} )
+add_executable(exampleB4a exampleB4a.cc ${sources} ${headers})
+target_link_libraries(exampleB4a ${Geant4_LIBRARIES})
+
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
-# build scinti. This is so that we can run the executable directly because it
+# build B4a. This is so that we can run the executable directly because it
 # relies on these scripts being in the current working directory.
 #
+set(EXAMPLEB4A_SCRIPTS
+  exampleB4a.out
+  exampleB4.in
+  gui.mac
+  init_vis.mac
+  plotHisto.C
+  plotNtuple.C
+  run1.mac
+  run2.mac
+  vis.mac
+  testrun.mac
 
-file(GLOB MACRO_FILES
-  "*.mac"
-)
-file(COPY ${MACRO_FILES} DESTINATION ${PROJECT_BINARY_DIR})
-
-set(EXAMPLEscinti_SCRIPTS
+  
   )
 
-foreach(_script ${EXAMPLEscinti_SCRIPTS})
+foreach(_script ${EXAMPLEB4A_SCRIPTS})
   configure_file(
     ${PROJECT_SOURCE_DIR}/${_script}
     ${PROJECT_BINARY_DIR}/${_script}
@@ -84,13 +65,6 @@ foreach(_script ${EXAMPLEscinti_SCRIPTS})
 endforeach()
 
 #----------------------------------------------------------------------------
-# For internal Geant4 use - but has no effect if you build this
-# example standalone
-#
-add_custom_target(scinti DEPENDS exe_scinti)
-
-#----------------------------------------------------------------------------
 # Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
 #
-install(TARGETS exe_scinti DESTINATION bin )
-
+install(TARGETS exampleB4a DESTINATION bin)
