@@ -24,51 +24,55 @@
 // ********************************************************************
 //
 //
-/// \file B4/B4a/include/RunAction.hh
-/// \brief Definition of the B4::RunAction class
+/// \file B4/B4a/include/EventAction.hh
+/// \brief Definition of the B4a::EventAction class
 
-#ifndef B4RunAction_h
-#define B4RunAction_h 1
+#ifndef B4aEventAction_h
+#define B4aEventAction_h 1
 
-#include "G4UserRunAction.hh"
+#include "G4UserEventAction.hh"
 #include "globals.hh"
 
-class G4Run;
-
-namespace B4
+namespace B4a
 {
 
-/// Run action class
-///
-/// It accumulates statistic and computes dispersion of the energy deposit
-/// and track lengths of charged particles with use of analysis tools:
-/// H1D histograms are created in BeginOfRunAction() for the following
-/// physics quantities:
-/// - Edep in absorber
-/// - Edep in gap
-/// - Track length in absorber
-/// - Track length in gap
-/// The same values are also saved in the ntuple.
-/// The histograms and ntuple are saved in the output file in a format
-/// according to a specified file extension.
-///
-/// In EndOfRunAction(), the accumulated statistic and computed
-/// dispersion is printed.
-///
+    /// Event action class
+    ///
+    /// It defines data members to hold the energy deposit and track lengths
+    /// of charged particles in Absober and Gap layers:
+    /// - fEnergyAbs, fEnergyGap, fTrackLAbs, fTrackLGap
+    /// which are collected step by step via the functions
+    /// - AddAbs(), AddGap()
 
-class RunAction : public G4UserRunAction
-{
-  public:
-    RunAction();
-    ~RunAction() override = default;
+    class EventAction : public G4UserEventAction
+    {
+    public:
+        EventAction() = default;
+        ~EventAction() override = default;
 
-    void BeginOfRunAction(const G4Run*) override;
-    void   EndOfRunAction(const G4Run*) override;
-};
+        void  BeginOfEventAction(const G4Event* event) override;
+        void    EndOfEventAction(const G4Event* event) override;
 
+
+        void AddSiPM(G4double de);
+        void AddSiPM2(G4double de);
+
+    private:
+        G4double  fEnergySiPM = 0.;
+        G4double  fEnergySiPM2 = 0.;
+    };
+
+    // inline functions
+
+    inline void EventAction::AddSiPM(G4double de) {
+        fEnergySiPM += de;
+    }
+
+    inline void EventAction::AddSiPM2(G4double de) {
+        fEnergySiPM2 += de;
+    }
+    //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 #endif
+
 

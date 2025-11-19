@@ -24,51 +24,54 @@
 // ********************************************************************
 //
 //
-/// \file B4/B4a/include/RunAction.hh
-/// \brief Definition of the B4::RunAction class
+/// \file B4/B4a/include/PrimaryGeneratorAction.hh
+/// \brief Definition of the B4::PrimaryGeneratorAction class
 
-#ifndef B4RunAction_h
-#define B4RunAction_h 1
+#ifndef B4PrimaryGeneratorAction_h
+#define B4PrimaryGeneratorAction_h 1
 
-#include "G4UserRunAction.hh"
+#include "G4VUserPrimaryGeneratorAction.hh"
 #include "globals.hh"
 
-class G4Run;
+/*
+#include "CRYGenerator.h"
+#include "CRYSetup.h"
+#include "CRYParticle.h"
+*/
 
+class G4ParticleGun;
+class G4Event;
+/*
+class CRYGenerator;
+class CRYSetup;
+class G4ParticleTable;
+*/
 namespace B4
 {
 
-/// Run action class
-///
-/// It accumulates statistic and computes dispersion of the energy deposit
-/// and track lengths of charged particles with use of analysis tools:
-/// H1D histograms are created in BeginOfRunAction() for the following
-/// physics quantities:
-/// - Edep in absorber
-/// - Edep in gap
-/// - Track length in absorber
-/// - Track length in gap
-/// The same values are also saved in the ntuple.
-/// The histograms and ntuple are saved in the output file in a format
-/// according to a specified file extension.
-///
-/// In EndOfRunAction(), the accumulated statistic and computed
-/// dispersion is printed.
-///
+	/// The primary generator action class with particle gum.
+	///
+	/// It defines a single particle which hits the calorimeter
+	/// perpendicular to the input face. The type of the particle
+	/// can be changed via the G4 build-in commands of G4ParticleGun class
+	/// (see the macros provided with this example).
 
-class RunAction : public G4UserRunAction
-{
-  public:
-    RunAction();
-    ~RunAction() override = default;
+	class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
+	{
+	public:
+		PrimaryGeneratorAction();
+		~PrimaryGeneratorAction() override;
 
-    void BeginOfRunAction(const G4Run*) override;
-    void   EndOfRunAction(const G4Run*) override;
-};
+		void GeneratePrimaries(G4Event* event) override;
+
+	private:
+		G4ParticleGun* fParticleGun = nullptr; // G4 particle gun
+		//CRYGenerator* cryGenerator;
+		//G4ParticleTable* particleTable;
+	};
 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif
-

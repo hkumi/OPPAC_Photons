@@ -24,46 +24,42 @@
 // ********************************************************************
 //
 //
-/// \file B4/B4a/include/RunAction.hh
-/// \brief Definition of the B4::RunAction class
+/// \file B4/B4a/include/SteppingAction.hh
+/// \brief Definition of the B4a::SteppingAction class
 
-#ifndef B4RunAction_h
-#define B4RunAction_h 1
+#ifndef B4aSteppingAction_h
+#define B4aSteppingAction_h 1
 
-#include "G4UserRunAction.hh"
-#include "globals.hh"
-
-class G4Run;
+#include "G4UserSteppingAction.hh"
 
 namespace B4
 {
+  class DetectorConstruction;
+}
 
-/// Run action class
-///
-/// It accumulates statistic and computes dispersion of the energy deposit
-/// and track lengths of charged particles with use of analysis tools:
-/// H1D histograms are created in BeginOfRunAction() for the following
-/// physics quantities:
-/// - Edep in absorber
-/// - Edep in gap
-/// - Track length in absorber
-/// - Track length in gap
-/// The same values are also saved in the ntuple.
-/// The histograms and ntuple are saved in the output file in a format
-/// according to a specified file extension.
-///
-/// In EndOfRunAction(), the accumulated statistic and computed
-/// dispersion is printed.
-///
-
-class RunAction : public G4UserRunAction
+namespace B4a
 {
-  public:
-    RunAction();
-    ~RunAction() override = default;
 
-    void BeginOfRunAction(const G4Run*) override;
-    void   EndOfRunAction(const G4Run*) override;
+class EventAction;
+
+/// Stepping action class.
+///
+/// In UserSteppingAction() there are collected the energy deposit and track
+/// lengths of charged particles in Absober and Gap layers and
+/// updated in EventAction.
+
+class SteppingAction : public G4UserSteppingAction
+{
+public:
+  SteppingAction(const B4::DetectorConstruction* detConstruction,
+                 EventAction* eventAction);
+  ~SteppingAction() override = default;
+
+  void UserSteppingAction(const G4Step* step) override;
+
+private:
+  const B4::DetectorConstruction* fDetConstruction = nullptr;
+  EventAction* fEventAction = nullptr;
 };
 
 }
@@ -71,4 +67,3 @@ class RunAction : public G4UserRunAction
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif
-
