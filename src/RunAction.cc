@@ -43,12 +43,16 @@ RunAction::RunAction()
 
     
  
-  man->CreateNtuple("xposition","xposition");
+  man->CreateNtuple("x_reconstruction","x_reconstruction");
   man->CreateNtupleDColumn("x");
   man->FinishNtuple(4);
 
-  man->CreateH1("x ","x", 100, -30, 30);
-  man->CreateH1("y ","y", 100, -30, 30);
+  man->CreateNtuple("y_reconstruction","y_reconstruction");
+  man->CreateNtupleDColumn("y");
+  man->FinishNtuple(5);
+
+  
+ 
   man->CreateH2("xy2 ","xy2", 100, -30, 30, 100, -30, 30);
 
 /*

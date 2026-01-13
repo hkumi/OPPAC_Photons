@@ -185,8 +185,14 @@ void MySensitiveDetector::FitHistogram(const std::vector<double>& xPosition1, co
     // Store the results in ntuple
     G4AnalysisManager* man = G4AnalysisManager::Instance();
     man->FillH2(0, x_pos/mm, y_pos/mm);
-    man->FillH1(0, x_pos/mm);
-    man->FillH1(1, y_pos/mm);
+    man->FillNtupleDColumn(4,0, x_pos/mm);
+    man->AddNtupleRow(4);
+
+    man->FillNtupleDColumn(5,0, y_pos/mm);
+    man->AddNtupleRow(5);
+
+
+    
 
     
 
